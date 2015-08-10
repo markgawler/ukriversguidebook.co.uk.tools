@@ -9,11 +9,20 @@ from urlparse import urlparse
 from tidylib import tidy_document
 
 root_path ='/home/mrfg/git/ukriversguidebook.co.uk.core/tmp/'
-#infile = 'rivers-south-east-england.html'
-infile = 'rivers-north-east-england.html'
-#infile = 'rivers-north-west-england.html'
-#infile = 'rivers-midlands-england.html'
 
+path_prefix = '/rivers/scotland/'
+#infile = 'se-england/rivers-south-east-england.html'
+#infile = 'ne-england/rivers-north-east-england.html'
+#infile = 'sw-england/rivers-south-west-england.html'
+#infile = 'nw-england/rivers-north-west-england.html'
+#infile = 'mi-england/rivers-midlands-england.html'
+#infile = 'n-wales/rivers_north-wales.html'
+#infile = 's-wales/rivers_south-wales.html'
+#infile = 'scot-su/rivers_the-southern-uplands-of-scotland.html'
+#infile = 'scot-wh/rivers_the-west-highlands-of-scotland.html'
+#infile = 'scot-ne/rivers_north-east-scotland.html'
+#infile = 'scot-ch/rivers_the-central-highlands-of-scotland.html'
+infile = 'scot-fn/rivers_the-far-north-of-scotland.html'
 
 class MyHTMLParser(HTMLParser):
     
@@ -52,10 +61,11 @@ class MyHTMLParser(HTMLParser):
                 if name == "href":
                     #print name, "=", value
                     url = urlparse(value)[2]
-                    #print url
-                    if self.in_articleBody:
+                    print url,self.in_articleBody
+                    if self.in_articleBody or url == '/reports/general/grades-in-the-guidebook':
+                        self.in_articleBody = True
                         self.curent_url = url[1:]
-                        if url[0:16] == '/rivers/england/':
+                        if url[0:len(path_prefix)] == path_prefix:
                             self.sequence.append(self.curent_url)
                             self.result[self.curent_url] = ''
                             self.river_line = True
@@ -65,6 +75,7 @@ class MyHTMLParser(HTMLParser):
                             self.result[self.curent_url] = '-----------------------------'
         elif tag == "div":
             for name, value in attrs:
+                #print '--',name
                 if name == "itemprop" and value == "articleBody":
                     self.in_articleBody = True
         
