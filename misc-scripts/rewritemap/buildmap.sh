@@ -1,3 +1,5 @@
 #!/bin/bash
 
-httxt2dbm -i mapfile.txt -o mapfile.map
+httxt2dbm -i legacymap.txt -o legacymap.map
+
+sudo cp legacymap.map /var/www/ukrgb/
