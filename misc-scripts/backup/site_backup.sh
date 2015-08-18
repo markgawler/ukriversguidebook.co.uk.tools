@@ -34,8 +34,8 @@ CMS_DB_USER=`/bin/grep '\$user ' $CMS_LOCATION/configuration.php \
 
 echo "Forum Name: ${FORUM_DB_NAME}"
 echo "CMS Name:   ${CMS_DB_NAME}"
-echo "Forum pwd:  ${FORUM_DB_PWD}"
-echo "CMS pwd:    ${CMS_DB_PWD}"
+#echo "Forum pwd:  ${FORUM_DB_PWD}"
+#echo "CMS pwd:    ${CMS_DB_PWD}"
 echo "Forum user: ${FORUM_DB_USER}"
 echo "CMS user:   ${CMS_DB_USER}"
 
