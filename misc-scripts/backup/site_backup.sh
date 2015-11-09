@@ -87,4 +87,12 @@ echo "Syncing to AWS"
 cd ..
 aws s3 sync . s3://backup.ukriversguidebook.co.uk/ --profile backupUser
 rm -rf ${bk_path}
+
+echo "Backup Media"
+cd /var/www/ukrgb/
+aws s3 sync site-media s3://backup.ukriversguidebook.co.uk/site-media/ --profile backupUser
+
+
+
+
 exit
