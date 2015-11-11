@@ -7,6 +7,7 @@ SITES_LOCATION="/var/www/ukrgb/"
 FORUM_LOCATION="${SITES_LOCATION}/phpbb"
 CMS_LOCATION="${SITES_LOCATION}/joomla"
 site_prefix="ukrgb"
+BACKUP_ID=$(date +%Y%m%d)
 
 
 FORUM_DB_NAME=`sudo /bin/grep '\$dbname' $FORUM_LOCATION/config.php \
@@ -40,25 +41,35 @@ echo "CMS user:   ${CMS_DB_USER}"
 
 echo "Stopping Apache.."
 sudo /etc/init.d/apache2 stop
-sudo /etc/init.d/mysql stop
+#sudo /etc/init.d/mysql stop
 
 echo "Droping DBs (phpBB)"
-#(
-#mysql -u ${FORUM_DB_USER} -p${FORUM_DB_PWD} <<EOF
-#USE ${FORUM_DB_NAME};
-#DROP DATABASE ${FORUM_DB_NAME};
-#
-#EOF
-#)
+(
+mysql -u ${FORUM_DB_USER} -p${FORUM_DB_PWD} <<EOF
+USE ${FORUM_DB_NAME};
+DROP DATABASE ${FORUM_DB_NAME};
+CREATE DATABASE ${FORUM_DB_NAME};
+EOF
+)
 
-#echo "Droping DBs (Joomla)"
-#(
-#mysql -u ${CMS_DB_USER} -p${CMS_DB_PWD} <<EOF
-#USE ${CMS_DB_NAME};
-#DROP DATABASE ${CMS_DB_NAME};
-#
-#EOF
-#)
+echo "Droping DBs (Joomla)"
+(
+mysql -u ${CMS_DB_USER} -p${CMS_DB_PWD} <<EOF
+USE ${CMS_DB_NAME};
+DROP DATABASE ${CMS_DB_NAME};
+CREATE DATABASE ${CMS_DB_NAME};
+EOF
+)
+
+
+#DROP USER '${site_prefix}_joomla'@'localhost';
+#GRANT USAGE ON ${site_prefix}_joomla.* TO '${site_prefix}_joomla'@'localhost';
+
+#DROP USER '${site_prefix}_phpBB3'@'localhost';
+#GRANT USAGE ON ${site_prefix}_phpBB3.* TO '${site_prefix}_phpBB3'@'localhost';
+
+
+
 
 
 mkdir -p ${HOME}/backups
@@ -66,21 +77,25 @@ mkdir -p ${HOME}/backups
 echo "Get backups from S3"
 cd ${HOME}/backups
 
-if [ ! -e ${BACKUP_ID}_cms.tar.gz ]
+if [ ! -e ${BACKUP_ID}_joomla.tar.gz ]
 then
     aws s3 cp s3://backup.ukriversguidebook.co.uk/daily/${BACKUP_ID}_joomla.tar.gz . --profile backupUser
     aws s3 cp s3://backup.ukriversguidebook.co.uk/daily/${BACKUP_ID}_ukrgb_joomla_db.tar.gz . --profile backupUser
     aws s3 cp s3://backup.ukriversguidebook.co.uk/daily/${BACKUP_ID}_phpbb.tar.gz . --profile backupUser
-    aws s3 cp s3://backup.ukriversguidebook.co.uk/daily/${BACKUP_ID}_ukrgb_phpbb_db.tar.gz . --profile backupUser
+    aws s3 cp s3://backup.ukriversguidebook.co.uk/daily/${BACKUP_ID}_ukrgb_phpBB3_db.tar.gz . --profile backupUser
 fi
 
 
 echo "Restore files"
 
 echo "extract Database backup"
-cd ${HOME}/backups/tmp
-sudo tar -xzf ${BACKUP_ID}_ukrgb_phpbb_db.tar.gz
+cd ${HOME}/backups
+sudo tar -xzf ${BACKUP_ID}_ukrgb_phpBB3_db.tar.gz
 sudo tar -xzf ${BACKUP_ID}_ukrgb_joomla_db.tar.gz
+
+mysql -u ${FORUM_DB_NAME} -p${FORUM_DB_PWD} ${FORUM_DB_NAME} < ~/backups/ukrgb_phpBB3.sql
+mysql -u ${CMS_DB_NAME} -p${CMS_DB_PWD} ${CMS_DB_NAME} < ~/backups/ukrgb_joomla.sql 
+
 
 exit
 
@@ -88,5 +103,5 @@ echo "Restore Database"
 
 
 echo "Starting Apache.."
-sudo /etc/init.d/mysql start
+#sudo /etc/init.d/mysql start
 sudo /etc/init.d/apache2 start
