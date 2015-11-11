@@ -62,14 +62,15 @@ EOF
 )
 
 
+echo "Remove site files"
+sudo rm -rf /var/www/${site_prefix}/phpbb
+sudo rm -rf /var/www/${site_prefix}/joomla
+
 #DROP USER '${site_prefix}_joomla'@'localhost';
 #GRANT USAGE ON ${site_prefix}_joomla.* TO '${site_prefix}_joomla'@'localhost';
 
 #DROP USER '${site_prefix}_phpBB3'@'localhost';
 #GRANT USAGE ON ${site_prefix}_phpBB3.* TO '${site_prefix}_phpBB3'@'localhost';
-
-
-
 
 
 mkdir -p ${HOME}/backups
@@ -93,14 +94,18 @@ cd ${HOME}/backups
 sudo tar -xzf ${BACKUP_ID}_ukrgb_phpBB3_db.tar.gz
 sudo tar -xzf ${BACKUP_ID}_ukrgb_joomla_db.tar.gz
 
+echo "Restore Database"
+echo "phpBB"
 mysql -u ${FORUM_DB_NAME} -p${FORUM_DB_PWD} ${FORUM_DB_NAME} < ~/backups/ukrgb_phpBB3.sql
+echo "phpBB"
 mysql -u ${CMS_DB_NAME} -p${CMS_DB_PWD} ${CMS_DB_NAME} < ~/backups/ukrgb_joomla.sql 
 
 
-exit
-
-echo "Restore Database"
-
+echo "Restore Files"
+cd /var/www/${site_prefix}/
+sudo tar -xzf ${HOME}/backups/${BACKUP_ID}_joomla.tar.gz 
+sudo tar -xzf ${HOME}/backups/${BACKUP_ID}_phpbb.tar.gz 
+sudo chown -R www-data:www-data /var/www/${site_prefix}/*
 
 echo "Starting Apache.."
 #sudo /etc/init.d/mysql start
