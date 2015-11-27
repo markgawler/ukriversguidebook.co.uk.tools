@@ -97,7 +97,7 @@ sudo tar -xzf ${BACKUP_ID}_ukrgb_joomla_db.tar.gz
 echo "Restore Database"
 echo "phpBB"
 mysql -u ${FORUM_DB_NAME} -p${FORUM_DB_PWD} ${FORUM_DB_NAME} < ~/backups/ukrgb_phpBB3.sql
-echo "phpBB"
+echo "Joomla"
 mysql -u ${CMS_DB_NAME} -p${CMS_DB_PWD} ${CMS_DB_NAME} < ~/backups/ukrgb_joomla.sql 
 
 
