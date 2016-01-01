@@ -8,7 +8,7 @@ FORUM_LOCATION="${SITES_LOCATION}/phpbb"
 CMS_LOCATION="${SITES_LOCATION}/joomla"
 site_prefix="ukrgb"
 BACKUP_ID=$(date +%Y%m%d)
-
+BACKUP_ID='20151112'
 
 FORUM_DB_NAME=`sudo /bin/grep '\$dbname' $FORUM_LOCATION/config.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
