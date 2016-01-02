@@ -3,6 +3,9 @@
 # get the location of this script 
 SRC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+cd ~
+wget https://www.phpbb.com/files/release/phpBB-3.1.6.tar.bz2
+wget https://tapatalk.com/files/plugin/tapatalk_phpBB-3.1_v1.3.3.zip
 
 cd /var/www/ukrgb/
 
@@ -45,5 +48,7 @@ rmdir ext
 sudo rm -rf /var/www/ukrgb/phpbb.old
 sudo chown -R www-data:www-data /var/www/ukrgb/phpbb/
 
+rm ~/phpBB-3.1.6.tar.bz2
+rm ~/tapatalk_phpBB-3.1_v1.3.3.zip
 
 
