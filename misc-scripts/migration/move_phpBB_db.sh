@@ -8,7 +8,6 @@ site_prefix="ukrgb"
 domain="ukriversguidebook.co.uk"
 BACKUP_ID=$(date +%Y%m%d)
 
-
 DB_NAME=`sudo /bin/grep '\$dbname' $FORUM_LOCATION/config.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
@@ -19,9 +18,9 @@ USER=`sudo /bin/grep '\$dbuser' $FORUM_LOCATION/config.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
 
-echo "Forum Name: ${FORUM_DB_NAME}"
-#echo "Forum pwd:  ${FORUM_DB_PWD}"
-echo "Forum user: ${FORUM_DB_USER}"
+echo "Forum Name: ${DB_NAME}"
+echo "Forum pwd:  ${PSWD}"
+echo "Forum user: ${USER}"
 
 echo "Droping DBs (phpBB)"
 (
@@ -51,7 +50,7 @@ cd ${HOME}/backups/tmp
 sudo tar -xzf ${BACKUP_ID}_phpbb_db.tar.gz
 
 echo "Restore Database"
-#sudo mkdir /var/lib/mysql/${site_prefix}_phpBB3
+sudo mkdir /var/lib/mysql/${site_prefix}_phpBB3
 sudo chown -R ubuntu:ubuntu ${HOME}/backups/tmp/*
 
 sudo mv forum_phpBB3/* /var/lib/mysql/${site_prefix}_phpBB3/
