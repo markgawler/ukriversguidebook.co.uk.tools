@@ -1,10 +1,17 @@
 #!/bin/bash
 
+# get the location of this script 
+SRC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd ~
+wget https://www.phpbb.com/files/release/phpBB-3.1.6.tar.bz2
+wget https://tapatalk.com/files/plugin/tapatalk_phpBB-3.1_v1.3.3.zip
+
 cd /var/www/ukrgb/
 
 sudo mv phpbb phpbb.old
 
-sudo tar -xvjf ~/phpBB-3.1.6.tar.bz2
+sudo tar -xjf ~/phpBB-3.1.6.tar.bz2
 
 sudo mv phpBB3/ phpbb
 
@@ -25,8 +32,8 @@ sudo ./bin/phpbbcli.php db:migrate --safe-mode
 
 sudo rm -rf install/
 
-# move utf_tools.php to /var/www/ukrgb/phpbb/includes/utf/utf_tools.php 
-
+sudo cp ${SRC}/utf_tools.php /var/www/ukrgb/phpbb/includes/utf/utf_tools.php 
+sudo chown www-data:www-data /var/www/ukrgb/phpbb/includes/utf/utf_tools.php
 
 cd  $HOME
 mkdir tmp
@@ -38,6 +45,10 @@ cd ext
 sudo mv tapatalk /var/www/ukrgb/phpbb/ext/
 cd ..
 rmdir ext
+sudo rm -rf /var/www/ukrgb/phpbb.old
+sudo chown -R www-data:www-data /var/www/ukrgb/phpbb/
 
+rm ~/phpBB-3.1.6.tar.bz2
+rm ~/tapatalk_phpBB-3.1_v1.3.3.zip
 
 
