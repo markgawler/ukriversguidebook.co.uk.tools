@@ -1,8 +1,10 @@
 #!/bin/bash
 
 #The root of the Backup location
-RDS_HOST="area51-db.cyhjcpqokgzi.eu-west-1.rds.amazonaws.com"
+#RDS_HOST="area51-db.cyhjcpqokgzi.eu-west-1.rds.amazonaws.com"
+RDS_HOST="production-db.cyhjcpqokgzi.eu-west-1.rds.amazonaws.com"
 RDS_USER="area51"
+RDS_USER="root"
 
 # Read Password
 echo -n Database Password: 
@@ -51,9 +53,10 @@ mysql -h ${RDS_HOST} -P 3306 -u ${RDS_USER} -p${RDS_PWD} <<EOF
 DROP DATABASE IF EXISTS ${CMS_DB_NAME};
 DROP DATABASE IF EXISTS ${FORUM_DB_NAME};
 
+GRANT USAGE ON  ${CMS_DB_NAME}.* TO '${CMS_DB_USER}'@'%' IDENTIFIED BY '${CMS_DB_PWD}';
+GRANT USAGE ON  ${FORUM_DB_NAME}.* TO '${FORUM_DB_USER}'@'%' IDENTIFIED BY '${FORUM_DB_PWD}';
 DROP USER '${CMS_DB_USER}'@'%';
 DROP USER '${FORUM_DB_USER}'@'%';
-
 
 CREATE DATABASE ${CMS_DB_NAME};
 CREATE DATABASE ${FORUM_DB_NAME};
@@ -65,8 +68,20 @@ GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORA
 EOF
 )
 
-#GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, CREATE TEMPORARY TABLES, LOCK TABLES ON ukrgb_joomla.* TO 'ukrgb_joomla'@'%' IDENTIFIED BY 'scorsvvr23';
+mkdir -p ${HOME}/backups
 
+echo "Get backups from S3"
+cd ${HOME}/backups
+
+if [ ! -e ${BACKUP_ID}_ukrgb_joomla_db.tar.gz ]
+then
+    aws s3 cp s3://backup.ukriversguidebook.co.uk/daily/${BACKUP_ID}_ukrgb_joomla_db.tar.gz . --profile backupUser
+    aws s3 cp s3://backup.ukriversguidebook.co.uk/daily/${BACKUP_ID}_ukrgb_phpBB3_db.tar.gz . --profile backupUser
+
+    echo "extract Database backup"
+    tar -xzf ${BACKUP_ID}_ukrgb_phpBB3_db.tar.gz
+    tar -xzf ${BACKUP_ID}_ukrgb_joomla_db.tar.gz
+fi
 
 echo "Restore Database"
 echo "Joomla"
