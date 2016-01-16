@@ -12,8 +12,10 @@ mkdir tmp
 cd tmp
 unzip ../${tapatalk_update}
 
+sudo rm -rf /var/www/ukrgb/phpbb/mobiquo
 sudo mv mobiquo /var/www/ukrgb/phpbb/
 cd ext
+sudo rm -rf /var/www/ukrgb/phpbb/ext/tapatalk
 sudo mv tapatalk /var/www/ukrgb/phpbb/ext/
 cd ..
 rmdir ext
