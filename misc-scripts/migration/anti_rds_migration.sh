@@ -20,22 +20,22 @@ RDS_HOST="area51-db.cyhjcpqokgzi.eu-west-1.rds.amazonaws.com"
 
 LOCAL_USER="root"
 
-FORUM_DB_NAME=`/bin/grep '\$dbname' $FORUM_LOCATION/config.php \
+FORUM_DB_NAME=`sudo /bin/grep '\$dbname' $FORUM_LOCATION/config.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
-CMS_DB_NAME=`/bin/grep '\$db ' $CMS_LOCATION/configuration.php \
+CMS_DB_NAME=`sudo /bin/grep '\$db ' $CMS_LOCATION/configuration.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
-FORUM_DB_PWD=`/bin/grep '\$dbpasswd' $FORUM_LOCATION/config.php \
+FORUM_DB_PWD=`sudo /bin/grep '\$dbpasswd' $FORUM_LOCATION/config.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
-CMS_DB_PWD=`/bin/grep '\$password ' $CMS_LOCATION/configuration.php \
+CMS_DB_PWD=`sudo /bin/grep '\$password ' $CMS_LOCATION/configuration.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
-FORUM_DB_USER=`/bin/grep '\$dbuser' $FORUM_LOCATION/config.php \
+FORUM_DB_USER=`sudo /bin/grep '\$dbuser' $FORUM_LOCATION/config.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
-CMS_DB_USER=`/bin/grep '\$user ' $CMS_LOCATION/configuration.php \
+CMS_DB_USER=`sudo /bin/grep '\$user ' $CMS_LOCATION/configuration.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
 
@@ -61,7 +61,7 @@ fi
 # Do the Backup
 echo "Starting database backups.."
 ${MYSQLDUMP} -h ${RDS_HOST} -P 3306 -u ${FORUM_DB_USER} -p${FORUM_DB_PWD} --lock-tables ${FORUM_DB_NAME} > ${bk_path}/${FORUM_DB_NAME}.sql 
-${MYSQLDUMP}  -h ${RDS_HOST} -P 3306-u ${CMS_DB_USER} -p${CMS_DB_PWD} --lock-tables ${CMS_DB_NAME} > ${bk_path}/${CMS_DB_NAME}.sql
+${MYSQLDUMP}  -h ${RDS_HOST} -P 3306 -u ${CMS_DB_USER} -p${CMS_DB_PWD} --lock-tables ${CMS_DB_NAME} > ${bk_path}/${CMS_DB_NAME}.sql
 
 # And the restore
 
