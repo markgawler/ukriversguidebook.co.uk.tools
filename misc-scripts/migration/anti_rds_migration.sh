@@ -15,8 +15,8 @@ read -s LOCAL_PWD
 echo
 
 
-RDS_HOST="area51-db.cyhjcpqokgzi.eu-west-1.rds.amazonaws.com"
-#RDS_HOST="production-db.cyhjcpqokgzi.eu-west-1.rds.amazonaws.com"
+#RDS_HOST="area51-db.cyhjcpqokgzi.eu-west-1.rds.amazonaws.com"
+RDS_HOST="production-db.cyhjcpqokgzi.eu-west-1.rds.amazonaws.com"
 
 LOCAL_USER="root"
 
