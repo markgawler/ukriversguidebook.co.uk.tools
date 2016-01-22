@@ -15,8 +15,8 @@ read -s LOCAL_PWD
 echo
 
 
-RDS_HOST="area51-db.cyhjcpqokgzi.eu-west-1.rds.amazonaws.com"
-#RDS_HOST="production-db.cyhjcpqokgzi.eu-west-1.rds.amazonaws.com"
+#RDS_HOST="area51-db.cyhjcpqokgzi.eu-west-1.rds.amazonaws.com"
+RDS_HOST="production-db.cyhjcpqokgzi.eu-west-1.rds.amazonaws.com"
 
 LOCAL_USER="root"
 
@@ -60,12 +60,15 @@ fi
 
 # Do the Backup
 echo "Starting database backups.."
+echo "phpBB"
 ${MYSQLDUMP} -h ${RDS_HOST} -P 3306 -u ${FORUM_DB_USER} -p${FORUM_DB_PWD} --lock-tables ${FORUM_DB_NAME} > ${bk_path}/${FORUM_DB_NAME}.sql 
+echo "joomla"
 ${MYSQLDUMP}  -h ${RDS_HOST} -P 3306 -u ${CMS_DB_USER} -p${CMS_DB_PWD} --lock-tables ${CMS_DB_NAME} > ${bk_path}/${CMS_DB_NAME}.sql
+echo "Done."
 
 # And the restore
 
-
+echo ""
 echo "Creating databases and users"
 (
 mysql  -u ${LOCAL_USER} -p${LOCAL_PWD} <<EOF
@@ -93,7 +96,7 @@ cd ${HOME}/backups
 
 echo "Restore Database"
 echo "Joomla"
-mysql -h ${RDS_HOST} -P 3306 -u ${CMS_DB_NAME} -p${CMS_DB_PWD} ${CMS_DB_NAME} < ~/backups/ukrgb_joomla.sql 
+mysql  -u ${CMS_DB_NAME} -p${CMS_DB_PWD} ${CMS_DB_NAME} < ~/backups/ukrgb_joomla.sql 
 
 echo "phpBB"
-mysql -h ${RDS_HOST} -P 3306 -u ${FORUM_DB_NAME} -p${FORUM_DB_PWD} ${FORUM_DB_NAME} < ~/backups/ukrgb_phpBB3.sql
+mysql -u ${FORUM_DB_NAME} -p${FORUM_DB_PWD} ${FORUM_DB_NAME} < ~/backups/ukrgb_phpBB3.sql
