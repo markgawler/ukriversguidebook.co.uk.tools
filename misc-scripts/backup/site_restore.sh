@@ -2,13 +2,18 @@
 
 
 #The root of the Backup location
+site_prefix="ukrgb"
 
-SITES_LOCATION="/var/www/ukrgb/"
+SITES_LOCATION="/var/www/${site_prefix}/"
 FORUM_LOCATION="${SITES_LOCATION}/phpbb"
 CMS_LOCATION="${SITES_LOCATION}/joomla"
-site_prefix="ukrgb"
 BACKUP_ID=$(date +%Y%m%d)
 #BACKUP_ID='20151112'
+
+if [ ! -d "$SITES_LOCATION" ]; then
+    sudo mkdir -v -p $SITES_LOCATION
+    sudo chown www-data:www-data $SITES_LOCATION
+fi
 
 FORUM_DB_NAME=`sudo /bin/grep '\$dbname' $FORUM_LOCATION/config.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
@@ -29,7 +34,6 @@ CMS_DB_USER=`sudo /bin/grep '\$user ' $CMS_LOCATION/configuration.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
 
-
 echo "Forum Name: ${FORUM_DB_NAME}"
 echo "CMS Name:   ${CMS_DB_NAME}"
 #echo "Forum pwd:  ${FORUM_DB_PWD}"
@@ -43,9 +47,11 @@ echo "Stopping Apache.."
 sudo /etc/init.d/apache2 stop
 #sudo /etc/init.d/mysql stop
 
+
+
 echo "Droping DBs (phpBB)"
 (
-mysql -u ${FORUM_DB_USER} -p${FORUM_DB_PWD} <<EOF
+    mysql -u ${FORUM_DB_USER} -p${FORUM_DB_PWD} <<EOF
 USE ${FORUM_DB_NAME};
 DROP DATABASE ${FORUM_DB_NAME};
 CREATE DATABASE ${FORUM_DB_NAME};
@@ -54,24 +60,16 @@ EOF
 
 echo "Droping DBs (Joomla)"
 (
-mysql -u ${CMS_DB_USER} -p${CMS_DB_PWD} <<EOF
+    mysql -u ${CMS_DB_USER} -p${CMS_DB_PWD} <<EOF
 USE ${CMS_DB_NAME};
 DROP DATABASE ${CMS_DB_NAME};
 CREATE DATABASE ${CMS_DB_NAME};
 EOF
 )
 
-
 echo "Remove site files"
 sudo rm -rf /var/www/${site_prefix}/phpbb
 sudo rm -rf /var/www/${site_prefix}/joomla
-
-#DROP USER '${site_prefix}_joomla'@'localhost';
-#GRANT USAGE ON ${site_prefix}_joomla.* TO '${site_prefix}_joomla'@'localhost';
-
-#DROP USER '${site_prefix}_phpBB3'@'localhost';
-#GRANT USAGE ON ${site_prefix}_phpBB3.* TO '${site_prefix}_phpBB3'@'localhost';
-
 
 mkdir -p ${HOME}/backups
 
@@ -91,15 +89,18 @@ echo "Restore files"
 
 echo "extract Database backup"
 cd ${HOME}/backups
-sudo tar -xzf ${BACKUP_ID}_ukrgb_phpBB3_db.tar.gz
-sudo tar -xzf ${BACKUP_ID}_ukrgb_joomla_db.tar.gz
+
 
 echo "Restore Database"
 echo "phpBB"
+sudo tar -xzf ${BACKUP_ID}_ukrgb_phpBB3_db.tar.gz
 mysql -u ${FORUM_DB_NAME} -p${FORUM_DB_PWD} ${FORUM_DB_NAME} < ~/backups/ukrgb_phpBB3.sql
-echo "Joomla"
-mysql -u ${CMS_DB_NAME} -p${CMS_DB_PWD} ${CMS_DB_NAME} < ~/backups/ukrgb_joomla.sql 
+sudo rm ~/backups/ukrgb_phpBB3.sql
 
+echo "Joomla"
+sudo tar -xzf ${BACKUP_ID}_ukrgb_joomla_db.tar.gz
+mysql -u ${CMS_DB_NAME} -p${CMS_DB_PWD} ${CMS_DB_NAME} < ~/backups/ukrgb_joomla.sql 
+sudo rm ~/backups/ukrgb_joomla.sql
 
 echo "Restore Files"
 cd /var/www/${site_prefix}/
