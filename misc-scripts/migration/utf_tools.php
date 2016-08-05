@@ -584,6 +584,8 @@ else
 * @param int $split_len number to characters to split string by
 * @return array characters in string reverses
 */
+
+if (!function_exists('utf8_str_split')) {
 function utf8_str_split($str, $split_len = 1)
 {
 	if (!is_int($split_len) || $split_len < 1)
@@ -600,13 +602,14 @@ function utf8_str_split($str, $split_len = 1)
 	preg_match_all('/.{' . $split_len . '}|[^\x00]{1,' . $split_len . '}$/us', $str, $ar);
 	return $ar[0];
 }
-
+}
 /**
 * UTF-8 aware alternative to strspn
 * Find length of initial segment matching the mask
 *
 * @author Harry Fuecks
 */
+if (!function_exists('utf8_strspn')) {
 function utf8_strspn($str, $mask, $start = null, $length = null)
 {
 	if ($start !== null || $length !== null)
@@ -623,7 +626,7 @@ function utf8_strspn($str, $mask, $start = null, $length = null)
 
 	return 0;
 }
-
+}
 /**
 * UTF-8 aware alternative to ucfirst
 * Make a string's first character uppercase
@@ -632,6 +635,7 @@ function utf8_strspn($str, $mask, $start = null, $length = null)
 * @param string
 * @return string with first character as upper case (if applicable)
 */
+if (!function_exists('utf8_ucfirst')) {
 function utf8_ucfirst($str)
 {
 	switch (utf8_strlen($str))
@@ -650,7 +654,7 @@ function utf8_ucfirst($str)
 		break;
 	}
 }
-
+}
 /**
 * Recode a string to UTF-8
 *
@@ -906,6 +910,8 @@ function utf8_encode_ncr_callback($m)
 * @param string $chr UTF-8 char
 * @return integer UNICODE code point
 */
+
+if (!function_exists('utf8_ord')) {	
 function utf8_ord($chr)
 {
 	switch (strlen($chr))
@@ -930,7 +936,7 @@ function utf8_ord($chr)
 			return $chr;
 	}
 }
-
+}
 /**
 * Converts an NCR to a UTF-8 char
 *
