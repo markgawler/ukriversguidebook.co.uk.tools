@@ -8,6 +8,7 @@ SITES_LOCATION="/var/www/${site_prefix}/"
 FORUM_LOCATION="${SITES_LOCATION}/phpbb"
 CMS_LOCATION="${SITES_LOCATION}/joomla"
 BACKUP_ID=$(date +%Y%m%d)
+DAY=$(date +%a)
 #BACKUP_ID='20151112'
 
 if [ ! -d "$SITES_LOCATION" ]; then
@@ -78,10 +79,15 @@ cd ${HOME}/backups
 
 if [ ! -e ${BACKUP_ID}_joomla.tar.gz ]
 then
-    aws s3 cp s3://backup.ukriversguidebook.co.uk/daily/${BACKUP_ID}_joomla.tar.gz . --profile backupUser
-    aws s3 cp s3://backup.ukriversguidebook.co.uk/daily/${BACKUP_ID}_ukrgb_joomla_db.tar.gz . --profile backupUser
-    aws s3 cp s3://backup.ukriversguidebook.co.uk/daily/${BACKUP_ID}_phpbb.tar.gz . --profile backupUser
-    aws s3 cp s3://backup.ukriversguidebook.co.uk/daily/${BACKUP_ID}_ukrgb_phpBB3_db.tar.gz . --profile backupUser
+    if [ "$DAY" = "Sun" ]; then
+	daily="weekly"
+    else
+        daily="daily"
+    fi
+    aws s3 cp s3://backup.ukriversguidebook.co.uk/${daily}/${BACKUP_ID}_joomla.tar.gz . --profile backupUser
+    aws s3 cp s3://backup.ukriversguidebook.co.uk/${daily}/${BACKUP_ID}_ukrgb_joomla_db.tar.gz . --profile backupUser
+    aws s3 cp s3://backup.ukriversguidebook.co.uk/${daily}/${BACKUP_ID}_phpbb.tar.gz . --profile backupUser
+    aws s3 cp s3://backup.ukriversguidebook.co.uk/${daily}/${BACKUP_ID}_ukrgb_phpBB3_db.tar.gz . --profile backupUser
 fi
 
 
