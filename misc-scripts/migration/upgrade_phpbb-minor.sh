@@ -3,7 +3,7 @@
 # get the location of this script 
 #SRC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-phpbb_update="phpBB-3.1.8_to_3.1.9.tar.bz2"
+phpbb_update="phpBB-3.1.9_to_3.1.10.tar.bz2"
 
 cd $HOME
 wget https://www.phpbb.com/files/release/${phpbb_update}
