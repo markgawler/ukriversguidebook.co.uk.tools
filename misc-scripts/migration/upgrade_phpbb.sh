@@ -3,7 +3,7 @@ new_phpbb_version="3.2.0"
 # get the location of this script 
 SRC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-cd ~
+cd $HOME
 wget https://www.phpbb.com/files/release/phpBB-${new_phpbb_version}.tar.bz2
 #wget https://tapatalk.com/files/plugin/tapatalk_phpBB-3.1_v1.3.3.zip
 
@@ -36,20 +36,10 @@ sudo rm -rf install/
 sudo cp ${SRC}/utf_tools.php /var/www/ukrgb/phpbb/includes/utf/utf_tools.php 
 sudo chown www-data:www-data /var/www/ukrgb/phpbb/includes/utf/utf_tools.php
 
-cd  $HOME
-mkdir tmp
-cd tmp
-#unzip ../tapatalk_phpBB-3.1_v1.3.3.zip
 
-#sudo mv mobiquo /var/www/ukrgb/phpbb/
-cd ext
-#sudo mv tapatalk /var/www/ukrgb/phpbb/ext/
-cd ..
-#rmdir ext
 sudo rm -rf /var/www/ukrgb/phpbb.old
 sudo chown -R www-data:www-data /var/www/ukrgb/phpbb/
 
-rm ~/phpBB-${new_phpbb_version}.tar.bz2
-#rm ~/tapatalk_phpBB-3.1_v1.3.3.zip
+rm ${HOME}/phpBB-${new_phpbb_version}.tar.bz2
 
 
