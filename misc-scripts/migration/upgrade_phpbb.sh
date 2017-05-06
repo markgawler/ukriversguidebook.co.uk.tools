@@ -33,8 +33,8 @@ sudo ./bin/phpbbcli.php db:migrate --safe-mode
 
 sudo rm -rf install/
 
-sudo cp ${SRC}/utf_tools.php /var/www/ukrgb/phpbb/includes/utf/utf_tools.php 
-sudo chown www-data:www-data /var/www/ukrgb/phpbb/includes/utf/utf_tools.php
+#sudo cp ${SRC}/utf_tools.php /var/www/ukrgb/phpbb/includes/utf/utf_tools.php 
+#sudo chown www-data:www-data /var/www/ukrgb/phpbb/includes/utf/utf_tools.php
 
 
 sudo rm -rf /var/www/ukrgb/phpbb.old
