@@ -8,7 +8,6 @@ SITES_LOCATION="/var/www/ukrgb/"
 BACKUP_LOCATION="/home/ubuntu/backup"
 FORUM_LOCATION="${SITES_LOCATION}/phpbb"
 CMS_LOCATION="${SITES_LOCATION}/joomla"
-#MYSQLHOTCOPY="/usr/bin/mysqlhotcopy"
 MYSQLDUMP="/usr/bin/mysqldump"
 
 
@@ -70,6 +69,12 @@ echo "Compressing phpBB files.."
 tar -czf ${bk_path}/${BACKUP_ID}_phpbb.tar.gz phpbb
 echo "Compressing Joomla files.."
 tar -czf ${bk_path}/${BACKUP_ID}_joomla.tar.gz joomla
+
+echo "Compressing Sea Site.."
+cd ..
+tar -czf ${bk_path}/${BACKUP_ID}_ukskgb.tar.gz ukskgb
+
+
 cd ${bk_path}
 
 echo "Compressing phpBB database.."
@@ -79,8 +84,6 @@ rm ${FORUM_DB_NAME}.sql
 echo "Compressing Joomla database.."
 tar -czf ${BACKUP_ID}_${CMS_DB_NAME}_db.tar.gz ${CMS_DB_NAME}.sql
 rm ${CMS_DB_NAME}.sql
-
-
 
 # move backups to AWS 
 echo "Syncing to AWS"
