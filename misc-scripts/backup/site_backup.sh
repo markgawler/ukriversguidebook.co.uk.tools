@@ -70,10 +70,11 @@ tar -czf ${bk_path}/${BACKUP_ID}_phpbb.tar.gz phpbb
 echo "Compressing Joomla files.."
 tar -czf ${bk_path}/${BACKUP_ID}_joomla.tar.gz joomla
 
-echo "Compressing Sea Site.."
-cd ..
-tar -czf ${bk_path}/${BACKUP_ID}_ukskgb.tar.gz ukskgb
-
+if [ "$bk_type" = "weekly" ]; then
+	echo "Compressing Sea Site.."
+	cd ..
+	tar -czf ${bk_path}/${BACKUP_ID}_ukskgb.tar.gz ukskgb
+fi
 
 cd ${bk_path}
 
