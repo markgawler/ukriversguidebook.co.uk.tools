@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# get the location of this script 
+# get the location of this script
 #SRC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-tapatalk_update="tapatalk_phpBB-3.1_v1.3.8.zip"
+tapatalk_update="tapatalk_phpBB-3.1-3.2_v2.0.3.zip"
 
 cd $HOME
 wget https://tapatalk.com/files/plugin/${tapatalk_update}
