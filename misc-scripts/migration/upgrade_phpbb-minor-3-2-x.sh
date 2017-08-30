@@ -16,7 +16,7 @@ new_phpbb_version="3.2.1"
 SRC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd $HOME
-#wget https://www.phpbb.com/files/release/phpBB-${new_phpbb_version}.tar.bz2
+wget https://www.phpbb.com/files/release/phpBB-${new_phpbb_version}.tar.bz2
 
 mkdir tmp
 cd tmp
