@@ -35,9 +35,13 @@ cd /var/www/ukrgb/
 sudo cp -a phpbb phpbb.old
 cd phpbb
 sudo rm -rf vendor
-sudo rm- rf cache
-sudo cp -av ~/tmp/phpBB3/* .
+sudo rm -rf cache
+sudo cp -a ~/tmp/phpBB3/* .
 sudo chown -R www-data:www-data /var/www/ukrgb/phpbb
 
-
-
+echo ""
+echo "Update database before deleting install"
+echo "Press return to delete install folder"
+read
+sudo rm -rf install
+echo "Update complete"
