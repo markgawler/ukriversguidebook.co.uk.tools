@@ -11,7 +11,7 @@
 #    Via FTP or SSH delete the /install folder from the root of your board installation.
 #    Done.
 
-new_phpbb_version="3.2.1"
+new_phpbb_version="3.2.2"
 # get the location of this script
 SRC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
