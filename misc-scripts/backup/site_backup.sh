@@ -96,7 +96,9 @@ echo "Backup Media"
 cd /var/www/ukrgb/
 aws s3 sync site-media s3://backup.ukriversguidebook.co.uk/site-media/ --profile backupUser
 
+aws s3 sync /etc/apache2 s3://backup.ukriversguidebook.co.uk/server-config/apache2/  --profile backupUser
 
+aws s3 sync /etc/postfix s3://backup.ukriversguidebook.co.uk/server-config/postfix/  --profile backupUser
 
 
 exit
