@@ -11,22 +11,22 @@ CMS_LOCATION="${SITES_LOCATION}/joomla"
 MYSQLDUMP="/usr/bin/mysqldump"
 
 
-FORUM_DB_NAME=`/bin/grep '\$dbname' $FORUM_LOCATION/config.php \
+FORUM_DB_NAME=`/bin/grep '\$dbname' ${FORUM_LOCATION}/config.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
-CMS_DB_NAME=`/bin/grep '\$db ' $CMS_LOCATION/configuration.php \
+CMS_DB_NAME=`/bin/grep '\$db ' ${CMS_LOCATION}/configuration.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
-FORUM_DB_PWD=`/bin/grep '\$dbpasswd' $FORUM_LOCATION/config.php \
+FORUM_DB_PWD=`/bin/grep '\$dbpasswd' ${FORUM_LOCATION}/config.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
-CMS_DB_PWD=`/bin/grep '\$password ' $CMS_LOCATION/configuration.php \
+CMS_DB_PWD=`/bin/grep '\$password ' ${CMS_LOCATION}/configuration.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
-FORUM_DB_USER=`/bin/grep '\$dbuser' $FORUM_LOCATION/config.php \
+FORUM_DB_USER=`/bin/grep '\$dbuser' ${FORUM_LOCATION}/config.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
-CMS_DB_USER=`/bin/grep '\$user ' $CMS_LOCATION/configuration.php \
+CMS_DB_USER=`/bin/grep '\$user ' ${CMS_LOCATION}/configuration.php \
     | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
 
 
@@ -51,9 +51,9 @@ fi
 bk_rel_path="SQL/${bk_type}"
 bk_path=${BACKUP_LOCATION}/${bk_rel_path}
 
-if [ ! -d $bk_path ]; then
-    echo "Creating Bacup location: $bk_path"
-    mkdir -p $bk_path
+if [ ! -d ${bk_path} ]; then
+    echo "Creating Backup location: $bk_path"
+    mkdir -p ${bk_path}
 fi
 
 
@@ -70,11 +70,11 @@ tar -czf ${bk_path}/${BACKUP_ID}_phpbb.tar.gz phpbb
 echo "Compressing Joomla files.."
 tar -czf ${bk_path}/${BACKUP_ID}_joomla.tar.gz joomla
 
-if [ "$bk_type" = "weekly" ]; then
-	echo "Compressing Sea Site.."
-	cd ..
-	tar -czf ${bk_path}/${BACKUP_ID}_ukskgb.tar.gz ukskgb
-fi
+#if [ "$bk_type" = "weekly" ]; then
+#	echo "Compressing Sea Site.."
+#	cd ..
+#	tar -czf ${bk_path}/${BACKUP_ID}_ukskgb.tar.gz ukskgb
+#fi
 
 cd ${bk_path}
 
@@ -96,7 +96,9 @@ echo "Backup Media"
 cd /var/www/ukrgb/
 aws s3 sync site-media s3://backup.ukriversguidebook.co.uk/site-media/ --profile backupUser
 
+aws s3 sync /etc/apache2 s3://backup.ukriversguidebook.co.uk/server-config/apache2/  --profile backupUser
 
+aws s3 sync /etc/postfix s3://backup.ukriversguidebook.co.uk/server-config/postfix/  --profile backupUser
 
 
 exit
