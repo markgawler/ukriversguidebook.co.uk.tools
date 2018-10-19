@@ -25,10 +25,8 @@ CMS_DB_USER=`sudo /bin/grep '\$user ' $CMS_LOCATION/configuration.php \
 echo "Forum pwd:  ${FORUM_DB_PWD}"
 echo "CMS pwd:    ${CMS_DB_PWD}"  
 
-echo "mysql root password"
-
 (
-mysql -u root -p <<EOF
+sudo mysql -u root  <<EOF
 
 CREATE DATABASE ${CMS_DB_NAME};
 CREATE DATABASE ${FORUM_DB_NAME};
