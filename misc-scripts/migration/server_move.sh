@@ -38,7 +38,7 @@ echo
 
 
 (
-sudo mysql -u${REMOTE_USER} -p${remote_password}   <<EOF
+sudo mysql -u${REMOTE_USER} -p${remote_password}  -h ${REMOTE_IP}  <<EOF
 
 CREATE DATABASE ${CMS_DB_NAME};
 CREATE DATABASE ${FORUM_DB_NAME};
@@ -46,16 +46,17 @@ CREATE DATABASE ${FORUM_DB_NAME};
 CREATE USER '$CMS_DB_USER'@'localhost' IDENTIFIED BY '$CMS_DB_PWD';
 CREATE USER '$FORUM_DB_USER'@'localhost' IDENTIFIED BY '$FORUM_DB_PWD';
 
-GRANT ALL PRIVILEGES ON ${site_prefix}_joomla.* TO '${site_prefix}_joomla'@'localhost';
-GRANT ALL PRIVILEGES ON ${site_prefix}_phpBB3.* TO '${site_prefix}_phpBB3'@'localhost';
+#GRANT ALL PRIVILEGES ON ${site_prefix}_joomla.* TO '${site_prefix}_joomla'@'localhost';
+#GRANT ALL PRIVILEGES ON ${site_prefix}_phpBB3.* TO '${site_prefix}_phpBB3'@'localhost';
 
 FLUSH PRIVILEGES;
 
 EOF
 )
+echo "Restore Database"
+mysqldump ${FORUM_DB_NAME} -u ${FORUM_DB_USER} -p${FORUM_DB_PWD} | mysql -h ${REMOTE_IP} -p${remote_password} -u ${REMOTE_USER} ${FORUM_DB_NAME}
+mysqldump ${CMS_DB_NAME} -u ${CMS_DB_USER} -p${CMS_DB_PWD} | mysql -h ${REMOTE_IP} -p${remote_password} -u ${REMOTE_USER} ${CMS_DB_NAME}
 
-#mysqldump ukrgb_joomla -p -u root | mysql -h '172.16.25.126' -pMagimix1 -u 'mrfg' ukrgb_joomla
-mysqldump ${CMS_DB_NAME} -u ${CMS_DB_USER} -p${CMS_DB_PWD} | mysql -h ${REMOTE_IP} -p${remote_password} -u${CMS_DB_PWD} ${CMS_DB_NAME}
 
 # Do the Backup
 #echo "Starting database backups.."
