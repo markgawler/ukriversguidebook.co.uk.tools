@@ -1,22 +1,23 @@
 #!/usr/bin/env bash
 
-REMOTE_HOST='ukriversguidebook.co.uk'
-#REMOTE_HOST='172.16.23.191'
+#REMOTE_HOST='ukriversguidebook.co.uk'
+REMOTE_HOST='172.16.23.191'
 REMOTE_SHELL_USER='ubuntu'
 REMOTE_DB_USER='root'
 
 #TEMP_DIR=$(mktemp -d)
-TEMP_DIR='/tmp/tmp.Gfask3GxfJ/'
+TEMP_DIR='/tmp/tmp.1uupaQYK0A/'
 echo "Temp: ${TEMP_DIR}"
 
 site_prefix="ukrgb"
 REMOTE_PATH="/var/www/${site_prefix}/"
-#LOCAL_PATH="${TEMP_DIR}/${site_prefix}/"
-LOCAL_PATH="${TEMP_DIR}"
+LOCAL_PATH="${TEMP_DIR}/${site_prefix}/"
+#LOCAL_PATH="${TEMP_DIR}"
+mkdir ${LOCAL_PATH}
 FORUM_PATH="${LOCAL_PATH}/phpbb"
 CMS_PATH="${LOCAL_PATH}/joomla"
 
-#rsync -va -e "ssh -i ~/.ssh/UKRGB_Production" --exclude phpbb/cache/ --exclude joomla/tmp/  ${REMOTE_SHELL_USER}@${REMOTE_HOST}:${REMOTE_PATH} ${TEMP_DIR}/
+rsync -va -e "ssh -i ~/.ssh/UKRGB_Production" --exclude phpbb/cache/ --exclude joomla/tmp/  ${REMOTE_SHELL_USER}@${REMOTE_HOST}:${REMOTE_PATH} ${LOCAL_PATH}/
 
 function get_param() {
 	param=$1
@@ -62,14 +63,13 @@ EOF
 
 
 # Read Password
-echo -n "Remote DB Password: "
-read -s remote_password
-echo
+#echo -n "Remote DB Password: "
+#read -s remote_password
+#echo
 
 echo "Restore Database"
 
-mysqldump -h 'other_hostname' --compress db_name | mysql db_name
-mysqldump -h ${REMOTE_HOST} -u ${CMS_DB_USER} -p${CMS_DB_PWD} --compress ${CMS_DB_NAME} | mysql ${CMS_DB_NAME}
+mysqldump -h ${REMOTE_HOST} -u ${CMS_DB_USER} -p${CMS_DB_PWD} --compress ${CMS_DB_NAME} | mysql -u ${CMS_DB_USER} -p${CMS_DB_PWD} ${CMS_DB_NAME}
 
 #mysqldump ${FORUM_DB_NAME} -u ${FORUM_DB_USER} -p${FORUM_DB_PWD} | mysql -h ${REMOTE_IP} -p${remote_password} -u ${REMOTE_USER} ${FORUM_DB_NAME}
 #mysqldump ${CMS_DB_NAME} -u ${CMS_DB_USER} -p${CMS_DB_PWD} | mysql -h ${REMOTE_IP} -p${remote_password} -u ${REMOTE_USER} ${CMS_DB_NAME}
