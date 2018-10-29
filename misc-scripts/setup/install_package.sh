@@ -5,7 +5,5 @@
 sudo apt-get update
 sudo apt-get upgrade
 sudo apt-get install lamp-server^
-sudo apt-get install php-curl
-sudo apt-get install awscli
-
+sudo apt-get install awscli php-curl php-simplexml
 
