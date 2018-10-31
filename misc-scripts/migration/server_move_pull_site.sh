@@ -5,19 +5,19 @@ REMOTE_HOST='172.16.23.191'
 REMOTE_SHELL_USER='ubuntu'
 REMOTE_DB_USER='root'
 
-#TEMP_DIR=$(mktemp -d)
-TEMP_DIR='/tmp/tmp.1uupaQYK0A/'
+TEMP_DIR=$(mktemp -d)
+#TEMP_DIR="/tmp/tmp.qVo5Pfjfvi/"
 echo "Temp: ${TEMP_DIR}"
 
 site_prefix="ukrgb"
-REMOTE_PATH="/var/www/${site_prefix}/"
-LOCAL_PATH="${TEMP_DIR}/${site_prefix}/"
-#LOCAL_PATH="${TEMP_DIR}"
+REMOTE_PATH="/var/www/${site_prefix}"
+LOCAL_PATH="${TEMP_DIR}/${site_prefix}"
+
 mkdir ${LOCAL_PATH}
 FORUM_PATH="${LOCAL_PATH}/phpbb"
 CMS_PATH="${LOCAL_PATH}/joomla"
 
-rsync -va -e "ssh -i ~/.ssh/UKRGB_Production" --exclude phpbb/cache/ --exclude joomla/tmp/  ${REMOTE_SHELL_USER}@${REMOTE_HOST}:${REMOTE_PATH} ${LOCAL_PATH}/
+rsync -va -e "ssh -i ~/.ssh/UKRGB_Production" --exclude phpbb/cache/ --exclude joomla/tmp/  ${REMOTE_SHELL_USER}@${REMOTE_HOST}:${REMOTE_PATH}/ ${LOCAL_PATH}/
 
 function get_param() {
 	param=$1
@@ -41,9 +41,21 @@ echo "CMS pwd:    ${CMS_DB_PWD}"
 echo "Forum user: ${FORUM_DB_USER}"
 echo "CMS user:   ${CMS_DB_USER}"
 
+if [[ -z  "${FORUM_DB_NAME}" || -z "${FORUM_DB_USER}"  ]] 
+then
+	echo "Unable to derive forum database name, is ${FORUM_PATH}/config.php missing or a permisions" 
+	echo "Purge aborted."
+	exit
+fi
 
-
+if [[ -z  "${CMS_DB_NAME}" || -z "${CMS_DB_USER}"  ]] 
+then
+	echo "Unable to derive forum database name, is ${CMS_PATH}/configuration.php missing or a permisions" 
+	echo "Purge aborted."
+	exit
+fi
 echo "sudo password"
+
 (
 sudo mysql <<EOF
 
@@ -61,22 +73,18 @@ FLUSH PRIVILEGES;
 EOF
 )
 
-
-# Read Password
-#echo -n "Remote DB Password: "
-#read -s remote_password
-#echo
-
 echo "Restore Database"
 
-mysqldump -h ${REMOTE_HOST} -u ${CMS_DB_USER} -p${CMS_DB_PWD} --compress ${CMS_DB_NAME} | mysql -u ${CMS_DB_USER} -p${CMS_DB_PWD} ${CMS_DB_NAME}
+#mysqldump -h ${REMOTE_HOST} -u ${CMS_DB_USER}   -p${CMS_DB_PWD}   --compress ${CMS_DB_NAME}   | mysql -u ${CMS_DB_USER}   -p${CMS_DB_PWD}   ${CMS_DB_NAME}
+#mysqldump -h ${REMOTE_HOST} -u ${FORUM_DB_NAME} -p${FORUM_DB_PWD} --compress ${FORUM_DB_NAME} | mysql -u ${FORUM_DB_NAME} -p${FORUM_DB_PWD} ${FORUM_DB_NAME}
 
-#mysqldump ${FORUM_DB_NAME} -u ${FORUM_DB_USER} -p${FORUM_DB_PWD} | mysql -h ${REMOTE_IP} -p${remote_password} -u ${REMOTE_USER} ${FORUM_DB_NAME}
-#mysqldump ${CMS_DB_NAME} -u ${CMS_DB_USER} -p${CMS_DB_PWD} | mysql -h ${REMOTE_IP} -p${remote_password} -u ${REMOTE_USER} ${CMS_DB_NAME}
+echo "Moving files"
+sudo rm -rf ${REMOTE_PATH}
+sudo mv ${LOCAL_PATH} ${REMOTE_PATH}
+sudo chown -R www-date:www-data ${LOCAL_PATH} 
 
+echo "Restarting Apache.."
+sudo service apache2 restart
 
-# Do the Backup
-#echo "Starting database backups.."
-#${MYSQLDUMP} -u ${FORUM_DB_USER} -p${FORUM_DB_PWD} --lock-tables ${FORUM_DB_NAME} > ${bk_path}/${FORUM_DB_NAME}.sql
-#${MYSQLDUMP} -u ${CMS_DB_USER} -p${CMS_DB_PWD} --lock-tables ${CMS_DB_NAME} > ${bk_path}/${CMS_DB_NAME}.sql
+echo "Restore Complete"
 
