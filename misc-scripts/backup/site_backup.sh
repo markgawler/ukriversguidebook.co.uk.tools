@@ -64,7 +64,7 @@ tar -czf ${BACKUP_ID}_${FORUM_DB_NAME}_db.tar.gz ${FORUM_DB_NAME}.sql
 rm ${FORUM_DB_NAME}.sql
 
 echo "Upload.."
-aws s3 cp ${BACKUP_ID}_${FORUM_DB_NAME}_db.tar.gz s3://backup.ukriversguidebook.co.uk/ --profile backupUser
+aws s3 cp ${BACKUP_ID}_${FORUM_DB_NAME}_db.tar.gz s3://backup.ukriversguidebook.co.uk/${bk_type}/ --profile backupUser
 rm ${BACKUP_ID}_${FORUM_DB_NAME}_db.tar.gz
 
 echo ""
@@ -77,19 +77,19 @@ tar -czf ${BACKUP_ID}_${CMS_DB_NAME}_db.tar.gz ${CMS_DB_NAME}.sql
 rm ${CMS_DB_NAME}.sql
 
 echo "Upload.."
-aws s3 cp ${BACKUP_ID}_${CMS_DB_NAME}_db.tar.gz s3://backup.ukriversguidebook.co.uk/ --profile backupUser
+aws s3 cp ${BACKUP_ID}_${CMS_DB_NAME}_db.tar.gz s3://backup.ukriversguidebook.co.uk/${bk_type}/ --profile backupUser
 rm ${BACKUP_ID}_${CMS_DB_NAME}_db.tar.gz
 
 
 cd ${SITES_LOCATION}
 echo "Compressing phpBB files.."
 tar -czf ${bk_path}/${BACKUP_ID}_phpbb.tar.gz phpbb
-aws s3 cp ${bk_path}/${BACKUP_ID}_phpbb.tar.gz s3://backup.ukriversguidebook.co.uk/ --profile backupUser
+aws s3 cp ${bk_path}/${BACKUP_ID}_phpbb.tar.gz s3://backup.ukriversguidebook.co.uk/${bk_type}/ --profile backupUser
 rm ${bk_path}/${BACKUP_ID}_phpbb.tar.gz
 
 echo "Compressing Joomla files.."
 tar -czf ${bk_path}/${BACKUP_ID}_joomla.tar.gz joomla
-aws s3 cp ${bk_path}/${BACKUP_ID}_joomla.tar.gz s3://backup.ukriversguidebook.co.uk/ --profile backupUser
+aws s3 cp ${bk_path}/${BACKUP_ID}_joomla.tar.gz s3://backup.ukriversguidebook.co.uk/${bk_type}/ --profile backupUser
 rm ${bk_path}/${BACKUP_ID}_joomla.tar.gz
 
 
