@@ -9,7 +9,7 @@ FORUM_LOCATION="${SITES_LOCATION}/phpbb"
 CMS_LOCATION="${SITES_LOCATION}/joomla"
 BACKUP_ID=$(date +%Y%m%d)
 DAY=$(date +%a)
-#BACKUP_ID='20151112'
+#BACKUP_ID='20190301'
 
 if [ ! -d "$SITES_LOCATION" ]; then
     sudo mkdir -v -p $SITES_LOCATION

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#git clone https://github.com/Neilpang/acme.sh.git
+git clone https://github.com/Neilpang/acme.sh.git
 
 cd ~/acme.sh
 sudo ./acme.sh --install  \

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-new_phpbb_version="3.2.4"
+new_phpbb_version="3.2.7"
 # get the location of this script
 SRC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

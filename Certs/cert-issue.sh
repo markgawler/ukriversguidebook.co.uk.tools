@@ -4,5 +4,6 @@ acme.sh --issue \
 	-d www.ukriversguidebook.co.uk \
 	-d ukrgb.co.uk \
 	-d www.ukrgb.co.uk \
+	-d area51.ukriversguidebook.co.uk \
 	-w /var/www/ukrgb/joomla
 
