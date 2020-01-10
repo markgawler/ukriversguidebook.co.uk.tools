@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
+
 CERT_DIR=/etc/ssl/ukrgb/letsencrypt
 CERT_DATE=$(date +%Y-%m-%d)
 
@@ -11,7 +16,7 @@ ARN=$(aws acm import-certificate \
 	--output text)
 
 echo "Imported"
-echo $ARN
+echo "$ARN"
 
-aws acm add-tags-to-certificate --certificate-arn ${ARN} --tags Key=Name,Value=LetsEncrypt-${CERT_DATE} --profile=certMgr
+aws acm add-tags-to-certificate --certificate-arn "${ARN}" --tags "Key=Name,Value=LetsEncrypt-${CERT_DATE}" --profile=certMgr
 
