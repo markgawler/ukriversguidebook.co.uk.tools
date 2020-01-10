@@ -52,7 +52,7 @@ fi
 
 
 # Do the Backup
-cd ${bk_path}
+cd ${bk_path} || exit
 
 echo "Starting backups.."
 echo "phpBB"
@@ -81,21 +81,21 @@ aws s3 cp ${BACKUP_ID}_${CMS_DB_NAME}_db.tar.gz s3://backup.ukriversguidebook.co
 rm ${BACKUP_ID}_${CMS_DB_NAME}_db.tar.gz
 
 
-cd ${SITES_LOCATION}
+cd ${SITES_LOCATION} || exit
 echo "Compressing phpBB files.."
 tar -czf ${bk_path}/${BACKUP_ID}_phpbb.tar.gz phpbb
 aws s3 cp ${bk_path}/${BACKUP_ID}_phpbb.tar.gz s3://backup.ukriversguidebook.co.uk/${bk_type}/ --profile backupUser
 rm ${bk_path}/${BACKUP_ID}_phpbb.tar.gz
 
 echo "Compressing Joomla files.."
-tar -czf ${bk_path}/${BACKUP_ID}_joomla.tar.gz joomla
+tar   --exclude=joomla/images/site-media  -czf ${bk_path}/${BACKUP_ID}_joomla.tar.gz joomla
 aws s3 cp ${bk_path}/${BACKUP_ID}_joomla.tar.gz s3://backup.ukriversguidebook.co.uk/${bk_type}/ --profile backupUser
 rm ${bk_path}/${BACKUP_ID}_joomla.tar.gz
 
 
 echo "Backup Media"
-cd /var/www/ukrgb/
-aws s3 sync site-media s3://backup.ukriversguidebook.co.uk/site-media/ --profile backupUser
+cd /var/www/ukrgb/ || exit
+aws s3 sync site-media s3://backup.ukriversguidebook.co.uk/joomla/images/site-media/ --profile backupUser
 
 aws s3 sync /etc/apache2 s3://backup.ukriversguidebook.co.uk/server-config/apache2/  --profile backupUser
 
