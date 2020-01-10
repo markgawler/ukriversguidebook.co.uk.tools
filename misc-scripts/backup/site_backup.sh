@@ -13,8 +13,8 @@ MYSQLDUMP="/usr/bin/mysqldump"
 function get_param() {
 	param=$1
 	file=$2
-	ret=`/bin/grep ${param} ${file} | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
-	echo ${ret}
+	ret=$(/bin/grep "${param}" "${file}" | sed -e "s/^.*=//" -e "s/[';[:space:]]//g")
+	echo "${ret}"
 }
 
 FORUM_DB_NAME=$(get_param '\$dbname' ${FORUM_LOCATION}/config.php)
