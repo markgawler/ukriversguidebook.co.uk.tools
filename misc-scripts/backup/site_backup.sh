@@ -57,7 +57,7 @@ cd ${bk_path} || exit
 echo "Starting backups.."
 echo "phpBB"
 echo "Dumping..."
-${MYSQLDUMP} -u ${FORUM_DB_USER} -p${FORUM_DB_PWD} --lock-tables ${FORUM_DB_NAME} > ${FORUM_DB_NAME}.sql
+${MYSQLDUMP} -u ${FORUM_DB_USER} -p${FORUM_DB_PWD} --no-tablespaces --lock-tables ${FORUM_DB_NAME} > ${FORUM_DB_NAME}.sql
 
 echo "Compressing.."
 tar -czf ${BACKUP_ID}_${FORUM_DB_NAME}_db.tar.gz ${FORUM_DB_NAME}.sql
@@ -70,7 +70,7 @@ rm ${BACKUP_ID}_${FORUM_DB_NAME}_db.tar.gz
 echo ""
 echo "Joomla"
 echo "Dumping..."
-${MYSQLDUMP} -u ${CMS_DB_USER} -p${CMS_DB_PWD} --lock-tables ${CMS_DB_NAME} > ${CMS_DB_NAME}.sql
+${MYSQLDUMP} -u ${CMS_DB_USER} -p${CMS_DB_PWD} --no-tablespaces --lock-tables ${CMS_DB_NAME} > ${CMS_DB_NAME}.sql
 
 echo "Compressing.."
 tar -czf ${BACKUP_ID}_${CMS_DB_NAME}_db.tar.gz ${CMS_DB_NAME}.sql
