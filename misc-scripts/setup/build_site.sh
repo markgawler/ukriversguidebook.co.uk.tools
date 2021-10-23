@@ -1,8 +1,47 @@
 #!/bin/bash
+
 BACKUP_ID=$(date +%Y%m%d)
-DAY=$(date +%a)
+BACKUP_ID='20211020'
 PROFILE="backupUser"
 
+mode=development
+db_restore=true
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+  key="$1"
+
+  case $key in
+    -d|--dev*)
+		mode=development
+        shift
+	    ;;
+    -p|--prod*)
+		mode=production
+        shift
+	    ;;
+    --no-database-restore)
+        db_restore=
+        shift
+        ;;
+    -h|--help)
+        echo "Usage: $0 [OPTION]"
+        echo "  -d, --development"
+        echo "  -p, --production"
+        echo "      --no-database-restore"
+        exit
+        ;;
+    *)    # unknown option
+        echo "$0: unrecognised option '$key'"
+        echo "Try '$0 --help' for more information."
+
+        POSITIONAL+=("$1") # save it in an array for later
+        shift # past argument
+        ;;
+  esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
+DAY=$(date +%a)
 BACKUPS="${HOME}/backups"
 site_prefix="ukrgb"
 SITES_LOCATION="/var/www/${site_prefix}/"
@@ -65,6 +104,7 @@ EOF
 #  **
 #  ** Main Program **
 #  **
+sudo systemctl stop apache2
 
 if [ -d "$SITES_LOCATION" ]; then
     echo "Cleaning $SITES_LOCATION"
@@ -111,72 +151,64 @@ sudo chown -R www-data:www-data /var/www/$SITES_LOCATION/*
     FORUM_DB_USER=$(get_param '\$dbuser' ${FORUM_LOCATION}/config.php)
     CMS_DB_USER=$(get_param '\$user\W' ${CMS_LOCATION}/configuration.php)
 }
-echo "Databases:"
-echo "  Forum Name: ${FORUM_DB_NAME}"
-echo "  CMS Name:   ${CMS_DB_NAME}"
-#echo "Passwords:"
-#echo " Forum pwd:  ${FORUM_DB_PWD}"
-#echo " CMS pwd:    ${CMS_DB_PWD}"
-echo "Database Users:"
-echo "  Forum user: ${FORUM_DB_USER}"
-echo "  CMS user:   ${CMS_DB_USER}"
+echo "Forum:"
+echo "  Forum DB Name: ${FORUM_DB_NAME}"
+echo "  Forum DB User: ${FORUM_DB_USER}"
+#echo " Forum DB pwd:  ${FORUM_DB_PWD}"
+echo "CMS:"
+echo "  CMS DB Name:   ${CMS_DB_NAME}"
+echo "  CMS DB User:   ${CMS_DB_USER}"
+#echo " CMS DB pwd:    ${CMS_DB_PWD}"
 
 databases=$(
     sudo mysql <<EOF
 SHOW DATABASES;
 EOF
 ) 
+if [ "$db_restore" ]; then
+    if [[ $databases == *$FORUM_DB_NAME* ]]; then
+        drop_db "$FORUM_DB_NAME" "$FORUM_DB_USER"
+    fi
+    create_db "$FORUM_DB_NAME" "$FORUM_DB_USER" "$FORUM_DB_PWD"
 
-if [[ $databases == *$FORUM_DB_NAME* ]]; then
-    drop_db "$FORUM_DB_NAME" "$FORUM_DB_USER"
+
+    if [[ $databases == *$CMS_DB_NAME* ]]; then
+        drop_db "$CMS_DB_NAME" "$CMS_DB_USER"
+    fi
+    create_db "$CMS_DB_NAME" "$CMS_DB_USER" "$CMS_DB_PWD"
+
+    cd "$temp_dir" || exit
+
+    echo "Restore Database"
+    echo "phpBB"
+    tar -xzf "${BACKUPS}/${BACKUP_ID}_ukrgb_phpBB3_db.tar.gz"
+    mysql -u "$FORUM_DB_NAME" -p"$FORUM_DB_PWD" "$FORUM_DB_NAME" < "$temp_dir/ukrgb_phpBB3.sql"
+    rm "$temp_dir"/ukrgb_phpBB3.sql
+
+    echo "Joomla"
+    tar -xzf "${BACKUPS}/${BACKUP_ID}_ukrgb_joomla_db.tar.gz"
+    mysql -u "$CMS_DB_NAME" -p"$CMS_DB_PWD" "$CMS_DB_NAME" < "$temp_dir/ukrgb_joomla.sql"
+    rm "$temp_dir"/ukrgb_joomla.sql
 fi
-create_db "$FORUM_DB_NAME" "$FORUM_DB_USER" "$FORUM_DB_PWD"
 
+if [ "$mode" == "production" ]; then
 
-if [[ $databases == *$CMS_DB_NAME* ]]; then
-    drop_db "$CMS_DB_NAME" "$CMS_DB_USER"
+    aws s3 cp s3://backup.ukriversguidebook.co.uk/server-config/apache2/sites-available/ukrgb.conf . --profile backupUser
+    aws s3 cp s3://backup.ukriversguidebook.co.uk/server-config/apache2/sites-available/ukrgb-ssl.conf . --profile backupUser
+
+    sudo a2ensite ukrgb*
+    sudo a2enmod remoteip rewrite expires ssl
+
+    cd ~/ukriversguidebook.co.uk.tools/CloudFrontIPs || exit
+    ./get_ips.sh
+    sudo cp ip-ranges.lis /var/www/ukrgb/
+
+    cd ~/ukriversguidebook.co.uk.tools/misc-scripts/rewritemap || exit
+    ./buildmap.sh
+else
+    echo "update Apache 000-default.conf and default-ssl.conf"
+    sudo sed -i 's/\/var\/www\/html/\/var\/www\/ukrgb\/joomla/' /etc/apache2/sites-available/000-default.conf 
+    sudo sed -i 's/\/var\/www\/html/\/var\/www\/ukrgb\/joomla/' /etc/apache2/sites-available/default-ssl.conf 
 fi
-create_db "$CMS_DB_NAME" "$CMS_DB_USER" "$CMS_DB_PWD"
-
-cd "$temp_dir" || exit
-
-echo "Restore Database"
-echo "phpBB"
-tar -xzf "${BACKUPS}/${BACKUP_ID}_ukrgb_phpBB3_db.tar.gz"
-mysql -u "$FORUM_DB_NAME" -p"$FORUM_DB_PWD" "$FORUM_DB_NAME" < "$temp_dir/ukrgb_phpBB3.sql"
-rm ~/backups/ukrgb_phpBB3.sql
-
-echo "Joomla"
-tar -xzf "${BACKUPS}/${BACKUP_ID}_ukrgb_joomla_db.tar.gz"
-mysql -u "$CMS_DB_NAME" -p"$CMS_DB_PWD" "$CMS_DB_NAME" < "$temp_dir/ukrgb_joomla.sql"
-rm "$temp_dir"/ukrgb_joomla.sql
-
-
-#rm -rf "$temp_dir"
-
-
-
-#./site_restore.sh
-#./create_db_users.sh 
-#./site_restore.sh
-
-
-exit
-
-aws s3 cp s3://backup.ukriversguidebook.co.uk/server-config/apache2/sites-available/ukrgb.conf . --profile backupUser
-aws s3 cp s3://backup.ukriversguidebook.co.uk/server-config/apache2/sites-available/ukrgb-ssl.conf . --profile backupUser
-
-
-sudo a2ensite ukrgb*
-sudo a2enmod remoteip rewrite expires ssl
-
-
-cd ~/ukriversguidebook.co.uk.tools/CloudFrontIPs
-./get_ips.sh
-sudo cp ip-ranges.lis /var/www/ukrgb/
-
-cd ~/ukriversguidebook.co.uk.tools/misc-scripts/rewritemap
-./buildmap.sh
-
 sudo systemctl restart apache2
 
