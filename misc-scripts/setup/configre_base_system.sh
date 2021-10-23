@@ -13,7 +13,7 @@ sudo apt-get -y upgrade
 sudo apt install -y shellcheck
 
 # LAMP 
-sudo apt install -y apache2 mariadb-server php php-curl php-simplexml php-mbstring
+sudo apt install -y apache2 mariadb-server php php-curl php-simplexml php-mbstring php-mysqli
 
 # AWS
 sudo apt-get install -y awscli 
