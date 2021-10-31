@@ -1,7 +1,7 @@
 #!/bin/bash
 
 BACKUP_ID=$(date +%Y%m%d)
-BACKUP_ID='20211020'
+#BACKUP_ID='20211020'
 PROFILE="backupUser"
 dev_site_name="dev-area51.ukriversguidebook.co.uk"
 mode=development
