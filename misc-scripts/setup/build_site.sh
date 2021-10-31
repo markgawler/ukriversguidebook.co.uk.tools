@@ -47,7 +47,11 @@ done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
 DAY=$(date +%a)
-BACKUPS="${HOME}/backups"
+if [ "$HOME" == "" ]; then
+    BACKUPS="$(mktemp -d)"
+else
+    BACKUPS="${HOME}/backups"
+fi
 site_prefix="ukrgb"
 SITES_LOCATION="/var/www/${site_prefix}/"
 FORUM_LOCATION="${SITES_LOCATION}/phpbb"
@@ -280,11 +284,9 @@ EOF
         cd ~/ukriversguidebook.co.uk.tools/misc-scripts/rewritemap || exit
         ./buildmap.sh
     else
+        update_apache_site_config 
+
         sudo a2enmod rewrite 
-        echo "update Apache 000-default.conf and default-ssl.conf"
-        sudo sed -i 's/\/var\/www\/html/\/var\/www\/ukrgb\/joomla/' /etc/apache2/sites-available/000-default.conf 
-        sudo sed -i 's/\/var\/www\/html/\/var\/www\/ukrgb\/joomla/' /etc/apache2/sites-available/default-ssl.conf 
-        sudo sed -i '/<\/VirtualHost>/ i \\n\t<Directory> "/var/www/ukrgb/joomla">\n\t\tAllowOverride All\n\t</Directory>' 000-default.conf 
 
         set_phpbb_site_name "$dev_site_name"
         set_joomla_site_name "$dev_site_name"

@@ -17,7 +17,6 @@ apt install -y apache2 mariadb-server php php-curl php-simplexml php-mbstring ph
 
 # AWS
 apt-get install -y awscli 
-#mkdir "$HOME"/.aws
 
 # Secure database
 #mysql_secure_installation

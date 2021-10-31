@@ -11,19 +11,22 @@ security_group="sg-05bfa9ba4f2b741ed"
 repositiry='https://raw.githubusercontent.com/markgawler/ukriversguidebook.co.uk.tools/master'
 
 function create_cloud_init_script () {
+    #local temp_dir=\$(mktemp -d)
+    local script_dir='/root/bin'
     cat << EOF >> cloud_init.sh
 #!/usr/bin/env bash
-temp_dir=\$(mktemp -d)
-curl "${repositiry}/misc-scripts/setup/build_site.sh" >  "\${temp_dir}/build_site.sh"
-curl "${repositiry}/misc-scripts/setup/configre_base_system.sh" >  "\${temp_dir}/configre_base_system.sh"
-chmod +x "\${temp_dir}\*.sh"
-"\${temp_dir}/configre_base_system.sh"
-"\${temp_dir}/build_site.sh"
+
+mkdir -p "$script_dir"
+curl "${repositiry}/misc-scripts/setup/build_site.sh" >  "${script_dir}/build_site.sh"
+curl "${repositiry}/misc-scripts/setup/configre_base_system.sh" >  "${script_dir}/configre_base_system.sh"
+
+source "${script_dir}/configre_base_system.sh"
+source "${script_dir}/build_site.sh"
 EOF
 }
 rm cloud_init.sh
 create_cloud_init_script
-#exit
+
 
 id=$(aws ec2 run-instances "$dry_run" \
     --image-id "$aim_id" \
@@ -44,3 +47,6 @@ aws ec2 create-tags "$dry_run" \
     --resources "$id" \
     --tags Key=Name,Value="$name" \
     --profile="$profile"
+
+public_ip=$(aws ec2 describe-instances --profile=$profile --instance-ids "$id"  --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
+echo "IP Address: $public_ip"
