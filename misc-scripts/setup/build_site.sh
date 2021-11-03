@@ -258,12 +258,12 @@ EOF
         cd "$temp_dir" || exit
 
         echo "Restore Database"
-        echo "phpBB"
+        echo "  phpBB"
         tar -xzf "${BACKUPS}/${BACKUP_ID}_ukrgb_phpBB3_db.tar.gz"
         mysql -u "$FORUM_DB_NAME" -p"$FORUM_DB_PWD" "$FORUM_DB_NAME" < "$temp_dir/ukrgb_phpBB3.sql"
         rm "$temp_dir"/ukrgb_phpBB3.sql
 
-        echo "Joomla"
+        echo "  Joomla"
         tar -xzf "${BACKUPS}/${BACKUP_ID}_ukrgb_joomla_db.tar.gz"
         mysql -u "$CMS_DB_NAME" -p"$CMS_DB_PWD" "$CMS_DB_NAME" < "$temp_dir/ukrgb_joomla.sql"
         rm "$temp_dir"/ukrgb_joomla.sql
@@ -285,13 +285,11 @@ EOF
         ./buildmap.sh
     else
         update_apache_site_config 
-
-        sudo a2enmod rewrite 
-
         set_phpbb_site_name "$dev_site_name"
         set_joomla_site_name "$dev_site_name"
+        disable_joomla_force_ssl
         disable_jfusion
-
+        sudo a2enmod rewrite 
     fi
     sudo systemctl restart apache2
 fi

@@ -95,7 +95,7 @@ function stop_instance() {
 instance=$(get_instance_by_name "$instance_name")
 if [ "$instance" == "" ]; then
 	echo "$0: Unknown Inastance name: $instance_name"
-	exit
+	exit 1
 fi
 echo "Instance Name: $instance_name, Instance Id: $instance, Action: $mode"
 
@@ -103,7 +103,7 @@ instance_state=$(get_state)
 case $instance_state in
 	pending|stopping)
 		echo "Busy.. $instance_state"
-		exit
+		exit 1
 		;;
 	running)
 		if [ "$mode" == "stop" ] || [ "$mode" == "toggle" ] ; then
@@ -121,5 +121,6 @@ case $instance_state in
 		;;
 	*)
 		echo "$0: Unexpected start: $instance_state"
+		exit 1
 		;;
 esac
