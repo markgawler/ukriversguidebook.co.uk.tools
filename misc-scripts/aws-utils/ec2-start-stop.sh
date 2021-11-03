@@ -2,7 +2,7 @@
 #
 host_name="dev-area51.ukriversguidebook.co.uk"
 profile="developer"
-
+test=false
 mode=toggle
 instance_name="Area51"
 while [[ $# -gt 0 ]]; do
@@ -29,6 +29,11 @@ while [[ $# -gt 0 ]]; do
 			fi
 			shift
 			;;
+		--test)
+            # Test mode, don't do anything!
+			test=
+			shift
+			;;
 		--help)
 			echo "  --start"
 			echo "  --stop"
@@ -47,7 +52,21 @@ done
 
 function get_instance_by_name() {
 	local name=$1
-	aws ec2 describe-instances --profile=$profile  --output text --filters "Name=tag:Name,Values=$name" --query 'Reservations[*].Instances[*].InstanceId'
+	id="$(aws ec2 describe-instances --profile=$profile  --output text \
+		--filters "Name=tag:Name,Values=$name" "Name=instance-state-name,Values=running,pending,stopping,stopped,terminated" \
+		--query 'Reservations[*].Instances[*].InstanceId')"
+	
+	count=$(wc -w <<< "$id")
+	if [ "$count" -gt "1" ]; then
+        # Ambigious name
+        return 2
+    elif [ "$count" -lt "1" ]; then
+        # Unknown security Group
+        return 1
+    else
+        echo "$id"
+        return 0
+    fi
 }
 
 function get_state() {
@@ -79,7 +98,7 @@ function start_instance() {
 
 	public_ip=$(aws ec2 describe-instances --profile=$profile --instance-ids "$instance"  --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
 
-	# Ass fost and public ID in to the local host file.
+	# Add hostname and public ID in to the local host file.
 	# Remove any previous entry
 	sudo sed -ie "/[[:space:]]$host_name/d" "/etc/hosts";
 	printf "%s\t%s\n" "$public_ip" "$host_name" | sudo tee -a /etc/hosts > /dev/null;
@@ -91,36 +110,43 @@ function stop_instance() {
 	aws ec2 stop-instances --instance-ids "$instance" --profile=$profile --output text
 	wait
 }
+if [ "$test" ]; then
+	instance=$(get_instance_by_name "$instance_name")
+	case $? in
+		1)
+			echo "$0: Unknown Inastance name: $instance_name"
+			exit 1
+			;;
+		2)
+			echo "$0: Ambigious Inastance name: $instance_name, multiple instances found"
+			exit 1
+			;;
+	esac
+	echo "Instance Name: $instance_name, Instance Id: $instance, Action: $mode"
 
-instance=$(get_instance_by_name "$instance_name")
-if [ "$instance" == "" ]; then
-	echo "$0: Unknown Inastance name: $instance_name"
-	exit 1
+	instance_state=$(get_state)
+	case $instance_state in
+		pending|stopping)
+			echo "Busy.. $instance_state"
+			exit 1
+			;;
+		running)
+			if [ "$mode" == "stop" ] || [ "$mode" == "toggle" ] ; then
+				stop_instance
+			elif [ "$mode" == "start" ]; then
+				echo "Instance already running"
+			fi
+			;;
+		stopped)
+			if [ "$mode" == "start" ] || [ "$mode" == "toggle" ] ; then
+				start_instance
+			elif [ "$mode" == "stop" ]; then
+				echo "Instance already stopped"
+			fi
+			;;
+		*)
+			echo "$0: Unexpected start: $instance_state"
+			exit 1
+			;;
+	esac
 fi
-echo "Instance Name: $instance_name, Instance Id: $instance, Action: $mode"
-
-instance_state=$(get_state)
-case $instance_state in
-	pending|stopping)
-		echo "Busy.. $instance_state"
-		exit 1
-		;;
-	running)
-		if [ "$mode" == "stop" ] || [ "$mode" == "toggle" ] ; then
-			stop_instance
-		elif [ "$mode" == "start" ]; then
-			echo "Instance already running"
-		fi
-		;;
-	stopped)
-		if [ "$mode" == "start" ] || [ "$mode" == "toggle" ] ; then
-			start_instance
-		elif [ "$mode" == "stop" ]; then
-			echo "Instance already stopped"
-		fi
-		;;
-	*)
-		echo "$0: Unexpected start: $instance_state"
-		exit 1
-		;;
-esac

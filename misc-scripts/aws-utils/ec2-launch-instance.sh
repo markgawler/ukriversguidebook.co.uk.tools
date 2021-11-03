@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 #
-dry_run=""
-#dry_run="--dry-run"
+
+host_name="dev-area51.ukriversguidebook.co.uk"
 profile="developer"
 default_name="Area51"
 ec2_role="UKRGB-Developer-EC2"
 #ec2_role="EC2_Production_Access"
 aim_id="ami-09e0d6fdf60750e33" #  Ubuntu Server 20.04 LTS (HVM), SSD Volume Type (64-bit Arm)
 subnet="subnet-8ffcbbea"
+cloud_init="$(mktemp --suffix=_cloud-init.sh)"
 
 repositiry='https://raw.githubusercontent.com/markgawler/ukriversguidebook.co.uk.tools/master'
 test=false
@@ -83,7 +84,7 @@ function check_role_name() {
 
 function create_cloud_init_script () {
     local script_dir='/root/bin'
-    cat << EOF >> cloud_init.sh
+    cat << EOF >> "$cloud_init"
 #!/usr/bin/env bash
 
 mkdir -p "$script_dir"
@@ -98,8 +99,9 @@ EOF
 function create_instance() {
     local sec_group=$1
     local iam_role=$2
+    create_cloud_init_script
 
-    id=$(aws ec2 run-instances "$dry_run" \
+    id=$(aws ec2 run-instances \
         --image-id "$aim_id" \
         --count 1 \
         --instance-type t4g.nano\
@@ -109,16 +111,17 @@ function create_instance() {
         --block-device-mappings "[{\"DeviceName\":\"/dev/sda1\",\"Ebs\":{\"VolumeSize\":10,\"DeleteOnTermination\":true}}]" \
         --profile="$profile"  \
         --iam-instance-profile Name="$iam_role" \
-        --user-data file://cloud_init.sh \
+        --user-data file://"$cloud_init" \
         --query 'Instances[*].InstanceId' --output text
         )
     echo "$id"
+    rm "$cloud_init"
 }
 
 function tag_instance() {
     local instance=$1
 
-    aws ec2 create-tags "$dry_run" \
+    aws ec2 create-tags \
         --resources "$instance" \
         --tags Key=Name,Value="$tag_name" \
         --profile="$profile"
@@ -145,12 +148,18 @@ if [ "$test" ]; then
     fi
     echo "Security Group: $security_group"
 
-    rm cloud_init.sh
-    create_cloud_init_script
     
-        
     id=$(create_instance "$security_group" "$iam_role")
     echo "Id: $id"
     tag_instance "$id"
-    echo "IP Address: $(get_ip "$id")"
+    public_ip="$(get_ip "$id")"
+
+    # Add hostname and public ID in to the local host file.
+	# Remove any previous entry
+    echo "Adding host to hostfile..."
+	sudo sed -ie "/[[:space:]]$host_name/d" "/etc/hosts";
+	printf "%s\t%s\n" "$public_ip" "$host_name" | sudo tee -a /etc/hosts > /dev/null;
+	echo "Host file updated, Public IP: $public_ip"
+    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$host_name"
+
 fi

@@ -174,7 +174,6 @@ function update_apache_site_config() {
     echo "update Apache 000-default.conf and default-ssl.conf"
 
     for file in 000-default.conf default-ssl.conf; do
-        echo "File: $path$file"
         sudo sed -i 's/\/var\/www\/html/\/var\/www\/ukrgb\/joomla/' "$path/$file" 
         sudo sed -i '/<\/VirtualHost>/ i \\n\t<Directory> "/var/www/ukrgb/joomla">\n\t\tAllowOverride All\n\t</Directory>' "$path/$file"
     done
