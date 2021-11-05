@@ -5,10 +5,8 @@ host_name="dev-area51.ukriversguidebook.co.uk"
 profile="developer"
 default_name="Area51"
 ec2_role="UKRGB-Developer-EC2"
-#ec2_role="EC2_Production_Access"
 aim_id="ami-09e0d6fdf60750e33" #  Ubuntu Server 20.04 LTS (HVM), SSD Volume Type (64-bit Arm)
 subnet="subnet-8ffcbbea"
-cloud_init="$(mktemp --suffix=_cloud-init.sh)"
 
 repositiry='https://raw.githubusercontent.com/markgawler/ukriversguidebook.co.uk.tools/master'
 test=false
@@ -83,7 +81,10 @@ function check_role_name() {
 
 
 function create_cloud_init_script () {
+    local cloud_init
     local script_dir='/root/bin'
+    cloud_init="$(mktemp --suffix=_cloud-init.sh)"
+
     cat << EOF >> "$cloud_init"
 #!/usr/bin/env bash
 
@@ -94,12 +95,14 @@ curl "${repositiry}/misc-scripts/setup/configre_base_system.sh" >  "${script_dir
 source "${script_dir}/configre_base_system.sh"
 source "${script_dir}/build_site.sh"
 EOF
+    echo "$cloud_init"
 }
 
 function create_instance() {
     local sec_group=$1
     local iam_role=$2
-    create_cloud_init_script
+    local script
+    script="$(create_cloud_init_script)"
 
     id=$(aws ec2 run-instances \
         --image-id "$aim_id" \
@@ -111,11 +114,11 @@ function create_instance() {
         --block-device-mappings "[{\"DeviceName\":\"/dev/sda1\",\"Ebs\":{\"VolumeSize\":10,\"DeleteOnTermination\":true}}]" \
         --profile="$profile"  \
         --iam-instance-profile Name="$iam_role" \
-        --user-data file://"$cloud_init" \
+        --user-data file://"$script" \
         --query 'Instances[*].InstanceId' --output text
         )
     echo "$id"
-    rm "$cloud_init"
+    rm "$script"
 }
 
 function tag_instance() {
