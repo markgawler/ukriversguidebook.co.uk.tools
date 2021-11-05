@@ -61,7 +61,7 @@ function get_instance_by_name() {
         # Ambigious name
         return 2
     elif [ "$count" -lt "1" ]; then
-        # Unknown security Group
+        # Unknown Instance Name
         return 1
     else
         echo "$id"

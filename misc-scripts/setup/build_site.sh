@@ -144,8 +144,8 @@ function disable_joomla_force_ssl() {
 }
 
 function set_phpbb_site_name() {
-    echo "Reconfigure phpBB"
-    site_name=$1
+    local site_name=$1
+    echo "Reconfigure phpBB (site name $site_name)"
 (
     mysql -u "$FORUM_DB_USER" -p"$FORUM_DB_PWD" <<EOF
     USE ${site_prefix}_phpBB3;
@@ -153,9 +153,19 @@ function set_phpbb_site_name() {
     UPDATE phpbb_config SET config_value = '${site_name}' WHERE config_name = 'cookie_domain';
 EOF
 )
-    # Clear the cache
-    sudo rm -rf /var/www/${site_prefix}/phpbb/cache/production/*
 }
+
+function set_phpbb_no_ssl() {
+    echo "Reconfigure phpBB (no ssl)"
+   (
+    mysql -u "$FORUM_DB_USER" -p"$FORUM_DB_PWD" <<EOF
+    USE ${site_prefix}_phpBB3;
+    UPDATE phpbb_config SET config_value = 'http://' WHERE config_name = 'server_protocol';
+    UPDATE phpbb_config SET config_value = '0' WHERE config_name = 'cookie_secure';
+EOF
+)
+}
+
 
 function get_credentials() {
     # shellcheck disable=SC2016
@@ -285,10 +295,14 @@ EOF
     else
         update_apache_site_config 
         set_phpbb_site_name "$dev_site_name"
+        set_phpbb_no_ssl
         set_joomla_site_name "$dev_site_name"
         disable_joomla_force_ssl
         disable_jfusion
         sudo a2enmod rewrite 
+
     fi
+    # Clear the phpbb cache
+    sudo rm -rf /var/www/${site_prefix}/phpbb/cache/production/*
     sudo systemctl restart apache2
 fi
