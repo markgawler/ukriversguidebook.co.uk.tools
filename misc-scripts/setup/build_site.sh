@@ -1,13 +1,12 @@
 #!/bin/bash
 
 BACKUP_ID=$(date +%Y%m%d)
-#BACKUP_ID='20211020'
 PROFILE="backupUser"
-dev_site_name="dev-area51.ukriversguidebook.co.uk"
+hostname="area51"
+domain="ukriversguidebook.co.uk"
 mode=development
 db_restore=true
 test_mode=
-POSITIONAL=()
 while [[ $# -gt 0 ]]; do
   key="$1"
 
@@ -28,6 +27,15 @@ while [[ $# -gt 0 ]]; do
         test_mode=true
         shift
         ;;
+    --hostname=*)
+        name=${key#*=}
+        if [ "$name" == "" ]; then
+            echo "$0: A name must be specified with theh '--hostname' switch."
+        else
+            hostname=$name
+        fi
+        shift
+        ;;
     -h|--help)
         echo "Usage: $0 [OPTION]"
         echo "  -d, --development"
@@ -38,14 +46,11 @@ while [[ $# -gt 0 ]]; do
     *)    # unknown option
         echo "$0: unrecognised option '$key'"
         echo "Try '$0 --help' for more information."
-
-        POSITIONAL+=("$1") # save it in an array for later
-        shift # past argument
         ;;
   esac
 done
-set -- "${POSITIONAL[@]}" # restore positional parameters
 
+site_fqn="${hostname}.${domain}"
 DAY=$(date +%a)
 if [ "$HOME" == "" ]; then
     BACKUPS="$(mktemp -d)"
@@ -294,9 +299,9 @@ EOF
         ./buildmap.sh
     else
         update_apache_site_config 
-        set_phpbb_site_name "$dev_site_name"
+        set_phpbb_site_name "$site_fqn"
         set_phpbb_no_ssl
-        set_joomla_site_name "$dev_site_name"
+        set_joomla_site_name "$site_fqn"
         disable_joomla_force_ssl
         disable_jfusion
         sudo a2enmod rewrite 

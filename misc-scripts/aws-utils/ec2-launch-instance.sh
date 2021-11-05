@@ -93,7 +93,7 @@ curl "${repositiry}/misc-scripts/setup/build_site.sh" >  "${script_dir}/build_si
 curl "${repositiry}/misc-scripts/setup/configre_base_system.sh" >  "${script_dir}/configre_base_system.sh"
 
 source "${script_dir}/configre_base_system.sh"
-source "${script_dir}/build_site.sh"
+source "${script_dir}/build_site.sh --hostname=$hostname"
 EOF
     echo "$cloud_init"
 }
@@ -160,7 +160,7 @@ if [ "$test" ]; then
 
     # Add hostname and public ID in to the local host file.
 	# Remove any previous entry
-    fqn="$hostname/$domain"
+    fqn="${hostname}.${domain}"
     echo "Adding host to hostfile..."
 	sudo sed -ie "/[[:space:]]$fqn/d" "/etc/hosts";
 	printf "%s\t%s\n" "$public_ip" "$fqn" | sudo tee -a /etc/hosts > /dev/null;
