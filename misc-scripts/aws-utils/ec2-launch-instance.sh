@@ -20,7 +20,7 @@ while [[ $# -gt 0 ]]; do
 			test=
 			shift
 			;;
-		--name=*)
+		--hostname=*)
 			name=${key#*=}
 			if [ "$name" == "" ]; then
 				echo "$0: A name must be specified with theh '--name' switch."
@@ -93,7 +93,7 @@ curl "${repositiry}/misc-scripts/setup/build_site.sh" >  "${script_dir}/build_si
 curl "${repositiry}/misc-scripts/setup/configre_base_system.sh" >  "${script_dir}/configre_base_system.sh"
 
 source "${script_dir}/configre_base_system.sh"
-source "${script_dir}/build_site.sh --hostname=$hostname"
+source "${script_dir}/build_site.sh" --hostname="$hostname"
 EOF
     echo "$cloud_init"
 }
@@ -103,7 +103,7 @@ function create_instance() {
     local iam_role=$2
     local script
     script="$(create_cloud_init_script)"
-
+   
     id=$(aws ec2 run-instances \
         --image-id "$aim_id" \
         --count 1 \

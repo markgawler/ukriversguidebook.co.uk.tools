@@ -32,7 +32,7 @@ while [[ $# -gt 0 ]]; do
         if [ "$name" == "" ]; then
             echo "$0: A name must be specified with theh '--hostname' switch."
         else
-            hostname=$name
+            hostname="$name"
         fi
         shift
         ;;
