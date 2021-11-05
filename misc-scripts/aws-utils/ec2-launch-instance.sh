@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 #
 
-host_name="dev-area51.ukriversguidebook.co.uk"
+hostname="dev-area51"
+domain="ukriversguidebook.co.uk"
 profile="developer"
-default_name="Area51"
+sec_group_name="Area51"
 ec2_role="UKRGB-Developer-EC2"
 aim_id="ami-09e0d6fdf60750e33" #  Ubuntu Server 20.04 LTS (HVM), SSD Volume Type (64-bit Arm)
 subnet="subnet-8ffcbbea"
@@ -24,7 +25,7 @@ while [[ $# -gt 0 ]]; do
 			if [ "$name" == "" ]; then
 				echo "$0: A name must be specified with theh '--name' switch."
 			else
-				default_name=$name
+				hostname=$name
 			fi
 			shift
 			;;
@@ -40,7 +41,6 @@ while [[ $# -gt 0 ]]; do
 			;;
 	esac
 done
-tag_name=$default_name
 
 function get_security_group() {
     local name=$1
@@ -123,10 +123,11 @@ function create_instance() {
 
 function tag_instance() {
     local instance=$1
+    local tag=$2
 
     aws ec2 create-tags \
         --resources "$instance" \
-        --tags Key=Name,Value="$tag_name" \
+        --tags Key=Name,Value="$tag" \
         --profile="$profile"
 }
 
@@ -145,7 +146,7 @@ if [ "$test" ]; then
     fi
     echo "Role Arn: $iam_role"
 
-    if ! security_group=$(get_security_group "$default_name") ; then
+    if ! security_group=$(get_security_group "$sec_group_name") ; then
         echo "$0: Invalid security group name $security_group"
         exit 1
     fi
@@ -154,15 +155,16 @@ if [ "$test" ]; then
     
     id=$(create_instance "$security_group" "$iam_role")
     echo "Id: $id"
-    tag_instance "$id"
+    tag_instance "$id" "$hostname"
     public_ip="$(get_ip "$id")"
 
     # Add hostname and public ID in to the local host file.
 	# Remove any previous entry
+    fqn="$hostname/$domain"
     echo "Adding host to hostfile..."
-	sudo sed -ie "/[[:space:]]$host_name/d" "/etc/hosts";
-	printf "%s\t%s\n" "$public_ip" "$host_name" | sudo tee -a /etc/hosts > /dev/null;
+	sudo sed -ie "/[[:space:]]$fqn/d" "/etc/hosts";
+	printf "%s\t%s\n" "$public_ip" "$fqn" | sudo tee -a /etc/hosts > /dev/null;
 	echo "Host file updated, Public IP: $public_ip"
-    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$host_name"
+    ssh-keygen -f "$HOME/.ssh/known_hosts" -R "$fqn"
 
 fi

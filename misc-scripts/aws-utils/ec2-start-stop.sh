@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-host_name="dev-area51.ukriversguidebook.co.uk"
+host_name="dev-area51"
+domain="ukriversguidebook.co.uk"
 profile="developer"
 test=false
 mode=toggle
-instance_name="Area51"
 while [[ $# -gt 0 ]]; do
 	key=$1
 	case $key in
@@ -25,7 +25,7 @@ while [[ $# -gt 0 ]]; do
 			if [ "$name" == "" ]; then
 				echo "$0: A name must be specified with theh '--name' switch."
 			else
-				instance_name=$name
+				host_name=$name
 			fi
 			shift
 			;;
@@ -100,8 +100,9 @@ function start_instance() {
 
 	# Add hostname and public ID in to the local host file.
 	# Remove any previous entry
-	sudo sed -ie "/[[:space:]]$host_name/d" "/etc/hosts";
-	printf "%s\t%s\n" "$public_ip" "$host_name" | sudo tee -a /etc/hosts > /dev/null;
+	fqn="$host_name/$domain"
+	sudo sed -ie "/[[:space:]]$fqn/d" "/etc/hosts";
+	printf "%s\t%s\n" "$public_ip" "$fqn" | sudo tee -a /etc/hosts > /dev/null;
 	echo "Host file updated, Public IP: $public_ip"
 }
 
@@ -111,18 +112,18 @@ function stop_instance() {
 	wait
 }
 if [ "$test" ]; then
-	instance=$(get_instance_by_name "$instance_name")
+	instance=$(get_instance_by_name "$host_name")
 	case $? in
 		1)
-			echo "$0: Unknown Inastance name: $instance_name"
+			echo "$0: Unknown Inastance name: $host_name"
 			exit 1
 			;;
 		2)
-			echo "$0: Ambigious Inastance name: $instance_name, multiple instances found"
+			echo "$0: Ambigious Inastance name: $host_name, multiple instances found"
 			exit 1
 			;;
 	esac
-	echo "Instance Name: $instance_name, Instance Id: $instance, Action: $mode"
+	echo "Instance Name: $host_name, Instance Id: $instance, Action: $mode"
 
 	instance_state=$(get_state)
 	case $instance_state in
