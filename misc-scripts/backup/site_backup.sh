@@ -95,7 +95,8 @@ rm ${bk_path}/${BACKUP_ID}_joomla.tar.gz
 
 echo "Backup Media"
 cd /var/www/ukrgb/ || exit
-aws s3 sync site-media s3://backup.ukriversguidebook.co.uk/joomla/images/site-media/ --profile backupUser
+# aws s3 sync site-media s3://backup.ukriversguidebook.co.uk/joomla/images/site-media/ --profile backupUser
+aws s3 sync /var/www/ukrgb/joomla/images/site-media s3://backup.ukriversguidebook.co.uk/joomla/images/site-media/ --profile backupUser
 
 aws s3 sync /etc/apache2 s3://backup.ukriversguidebook.co.uk/server-config/apache2/  --profile backupUser
 
