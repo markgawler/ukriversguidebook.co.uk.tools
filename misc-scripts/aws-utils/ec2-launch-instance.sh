@@ -11,6 +11,7 @@ subnet="subnet-8ffcbbea"
 
 repositiry='https://raw.githubusercontent.com/markgawler/ukriversguidebook.co.uk.tools/master'
 test=false
+export_cloud_init=false
 
 while [[ $# -gt 0 ]]; do
 	key=$1
@@ -31,9 +32,14 @@ while [[ $# -gt 0 ]]; do
 			;;
 		--help)
 			echo "  --name=<instance Nameed>, Default Area51"
+			echo "  --export_cloud_init, Export the cloud_init script"
 			echo ""
 			exit
 			;;
+        --export_cloud_init)
+            export_cloud_init=
+            shift
+            ;;
 		*)  # unknown option
 			echo "$0: unrecognised option '$key'"
 			echo "Try '$0 --help' for more information."
@@ -83,8 +89,9 @@ function check_role_name() {
 function create_cloud_init_script () {
     local cloud_init
     local script_dir='/root/bin'
-    cloud_init="$(mktemp --suffix=_cloud-init.sh)"
-
+    #todo: macos dosnt support --suffix
+    #cloud_init="$(mktemp --suffix=_cloud-init.sh)"
+    cloud_init="$(mktemp)_cloud-init.sh"
     cat << EOF >> "$cloud_init"
 #!/usr/bin/env bash
 
@@ -136,7 +143,13 @@ function get_ip() {
     public_ip=$(aws ec2 describe-instances --profile=$profile --instance-ids "$instance"  --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
     echo "$public_ip"
 }
-
+if [ "$export_cloud_init" ]; then
+    echo "Export cloud_init script"
+    script="$(create_cloud_init_script)"
+    echo "$(cat $script)"
+    rm $script
+    exit
+fi
 if [ "$test" ]; then
     echo "Main Program"
 
