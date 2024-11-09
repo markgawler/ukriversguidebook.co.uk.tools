@@ -1,17 +1,19 @@
 #!/bin/bash
-new_phpbb_version="3.2.0"
-# get the location of this script 
-SRC="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+new_phpbb_major="3.3"
+new_phpbb_minor="13"
 
-cd $HOME
-wget https://www.phpbb.com/files/release/phpBB-${new_phpbb_version}.tar.bz2
-#wget https://tapatalk.com/files/plugin/tapatalk_phpBB-3.1_v1.3.3.zip
+# phpBB full version and archive name
+new_phpbb_version="$new_phpbb_major.$new_phpbb_minor"
+phpbb_archive="phpBB-$new_phpbb_version.tar.bz2"
 
-cd /var/www/ukrgb/
+cd "$HOME" || exit
+curl https://download.phpbb.com/pub/release/$new_phpbb_major/$new_phpbb_version/$phpbb_archive -o $phpbb_archive
+
+cd /var/www/ukrgb/ || { echo "UKRGB site not found"; exit 1; }
 
 sudo mv phpbb phpbb.old
 
-sudo tar -xjf ~/phpBB-${new_phpbb_version}.tar.bz2
+sudo tar -xjf ~/phpBB-$new_phpbb_version.tar.bz2
 
 sudo mv phpBB3/ phpbb
 
@@ -26,16 +28,12 @@ sudo cp -a phpbb.old/images phpbb/
 sudo cp -a phpbb.old/files phpbb/
 sudo cp -a phpbb.old/store phpbb/
 
-cd phpbb
+cd phpbb || exit
 sudo chmod +x  ./bin/phpbbcli.php
 
 sudo ./bin/phpbbcli.php db:migrate --safe-mode
 
 sudo rm -rf install/
-
-#sudo cp ${SRC}/utf_tools.php /var/www/ukrgb/phpbb/includes/utf/utf_tools.php 
-#sudo chown www-data:www-data /var/www/ukrgb/phpbb/includes/utf/utf_tools.php
-
 
 sudo rm -rf /var/www/ukrgb/phpbb.old
 sudo chown -R www-data:www-data /var/www/ukrgb/phpbb/
