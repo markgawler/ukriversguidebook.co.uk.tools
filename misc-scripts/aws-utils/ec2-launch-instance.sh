@@ -38,6 +38,7 @@ while [[ $# -gt 0 ]]; do
 			;;
         --export_cloud_init)
             export_cloud_init=
+            test=
             shift
             ;;
 		*)  # unknown option
