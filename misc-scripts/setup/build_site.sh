@@ -328,6 +328,8 @@ EOF
         set_joomla_site_name "$site_fqn"
         disable_joomla_force_ssl
         disable_jfusion
+        disable_phpbb_extensions
+        set_phpbb_default_style
         sudo a2enmod rewrite 
 
     fi
