@@ -3,27 +3,29 @@
 #REMOTE_HOST='ukriversguidebook.co.uk'
 REMOTE_HOST='172.16.23.191'
 REMOTE_SHELL_USER='ubuntu'
-REMOTE_DB_USER='root'
+#SSH_key_pair='UKRGB_Production'
+SSH_key_pair='Area51'
+#REMOTE_DB_USER='root'
 
 TEMP_DIR=$(mktemp -d)
-#TEMP_DIR="/tmp/tmp.qVo5Pfjfvi/"
 echo "Temp: ${TEMP_DIR}"
 
 site_prefix="ukrgb"
 REMOTE_PATH="/var/www/${site_prefix}"
 LOCAL_PATH="${TEMP_DIR}/${site_prefix}"
 
-mkdir ${LOCAL_PATH}
+mkdir "$LOCAL_PATH"
 FORUM_PATH="${LOCAL_PATH}/phpbb"
 CMS_PATH="${LOCAL_PATH}/joomla"
 
-rsync -va -e "ssh -i ~/.ssh/UKRGB_Production" --exclude phpbb/cache/ --exclude joomla/tmp/  ${REMOTE_SHELL_USER}@${REMOTE_HOST}:${REMOTE_PATH}/ ${LOCAL_PATH}/
+rsync -va -e "ssh -i ~/.ssh/$SSH_key_pair" --exclude phpbb/cache/ --exclude joomla/tmp/  ${REMOTE_SHELL_USER}@${REMOTE_HOST}:${REMOTE_PATH}/ ${LOCAL_PATH}/
 
 function get_param() {
 	param=$1
 	file=$2
-	ret=`/bin/grep ${param} ${file} | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
-	echo ${ret}
+	#ret=`/bin/grep ${param} ${file} | sed -e "s/^.*=//" -e "s/[';[:space:]]//g"`
+	ret=$(/bin/grep ${param} ${file} | sed -e "s/^.*=//" -e "s/[';[:space:]]//g")
+	echo "${ret}"
 }
 
 FORUM_DB_NAME=$(get_param '\$dbname' ${FORUM_PATH}/config.php)
@@ -40,7 +42,7 @@ echo "Forum pwd:  ${FORUM_DB_PWD}"
 echo "CMS pwd:    ${CMS_DB_PWD}"
 echo "Forum user: ${FORUM_DB_USER}"
 echo "CMS user:   ${CMS_DB_USER}"
-
+exit
 if [[ -z  "${FORUM_DB_NAME}" || -z "${FORUM_DB_USER}"  ]] 
 then
 	echo "Unable to derive forum database name, is ${FORUM_PATH}/config.php missing or a permisions" 
