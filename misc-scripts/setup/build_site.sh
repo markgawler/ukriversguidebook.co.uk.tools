@@ -181,13 +181,18 @@ EOF
 )
 }
 function disable_phpbb_extensions() {
-    echo "Disable phpbb extensions (except gfksx/ThanksForPosts)"
+    echo "Disable phpbb extensions"
+    # (except gfksx/ThanksForPosts)
+    # WHERE ext_name != 'gfksx/ThanksForPosts'
    (
     mysql -u "$FORUM_DB_USER" -p"$FORUM_DB_PWD" <<EOF
     USE ${site_prefix}_phpBB3;
-    UPDATE phpbb_ext SET ext_active = '0' WHERE ext_name != 'gfksx/ThanksForPosts';
+    UPDATE phpbb_ext SET ext_active = '0' ;
 EOF
 )
+    # Remove Thanks for post, it dosnt disable well, clean cache to avoid fosils
+    rm -rf $FORUM_LOCATION/ext/gfksx
+    rm -rf $FORUM_LOCATION/cache/production$
 }
 
 
