@@ -171,6 +171,25 @@ EOF
 )
 }
 
+function set_phpbb_default_style() {
+    echo "Set defaylt style to default (prosilver)"
+   (
+    mysql -u "$FORUM_DB_USER" -p"$FORUM_DB_PWD" <<EOF
+    USE ${site_prefix}_phpBB3;
+    UPDATE phpbb_config SET config_value = '1' WHERE config_name = 'default_style';
+EOF
+)
+}
+function disable_phpbb_extensions() {
+    echo "Disable phpbb extensions (except gfksx/ThanksForPosts)"
+   (
+    mysql -u "$FORUM_DB_USER" -p"$FORUM_DB_PWD" <<EOF
+    USE ${site_prefix}_phpBB3;
+    UPDATE phpbb_ext SET ext_active = '0' WHERE ext_name != 'gfksx/ThanksForPosts';
+EOF
+)
+}
+
 
 function get_credentials() {
     # shellcheck disable=SC2016
