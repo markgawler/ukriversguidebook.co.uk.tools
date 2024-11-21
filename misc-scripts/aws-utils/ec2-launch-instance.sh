@@ -99,9 +99,10 @@ function create_cloud_init_script () {
 mkdir -p "$script_dir"
 curl "${repositiry}/misc-scripts/setup/build_site.sh" >  "${script_dir}/build_site.sh"
 curl "${repositiry}/misc-scripts/setup/configre_base_system.sh" >  "${script_dir}/configre_base_system.sh"
-
+curl "${repositiry}/misc-scripts/migration/upgrade_phpbb.sh >  "${script_dir}/upgrade_phpbb.sh"
 source "${script_dir}/configre_base_system.sh"
 source "${script_dir}/build_site.sh" --hostname="$hostname"
+source "${script_dir}/upgrade_phpbb.sh" --version=3.3.13
 EOF
     echo "$cloud_init"
 }
@@ -144,11 +145,12 @@ function get_ip() {
     public_ip=$(aws ec2 describe-instances --profile=$profile --instance-ids "$instance"  --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
     echo "$public_ip"
 }
-if [ "$export_cloud_init" ]; then
+
+if ! [ "$export_cloud_init" ]; then
     echo "Export cloud_init script"
     script="$(create_cloud_init_script)"
-    echo "$(cat $script)"
-    rm $script
+    cat $script
+    rm "$script"
     exit
 fi
 if [ "$test" ]; then
