@@ -99,7 +99,7 @@ function create_cloud_init_script () {
 mkdir -p "$script_dir"
 curl "${repositiry}/misc-scripts/setup/build_site.sh" >  "${script_dir}/build_site.sh"
 curl "${repositiry}/misc-scripts/setup/configre_base_system.sh" >  "${script_dir}/configre_base_system.sh"
-curl "${repositiry}/misc-scripts/migration/upgrade_phpbb.sh >  "${script_dir}/upgrade_phpbb.sh"
+curl "${repositiry}/misc-scripts/migration/upgrade_phpbb.sh" >  "${script_dir}/upgrade_phpbb.sh"
 source "${script_dir}/configre_base_system.sh"
 source "${script_dir}/build_site.sh" --hostname="$hostname"
 source "${script_dir}/upgrade_phpbb.sh" --version=3.3.13
