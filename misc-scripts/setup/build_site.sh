@@ -171,6 +171,30 @@ EOF
 )
 }
 
+function set_phpbb_default_style() {
+    echo "Set defaylt style to default (prosilver)"
+   (
+    mysql -u "$FORUM_DB_USER" -p"$FORUM_DB_PWD" <<EOF
+    USE ${site_prefix}_phpBB3;
+    UPDATE phpbb_config SET config_value = '1' WHERE config_name = 'default_style';
+EOF
+)
+}
+function disable_phpbb_extensions() {
+    echo "Disable phpbb extensions"
+    # (except gfksx/ThanksForPosts)
+    # WHERE ext_name != 'gfksx/ThanksForPosts'
+   (
+    mysql -u "$FORUM_DB_USER" -p"$FORUM_DB_PWD" <<EOF
+    USE ${site_prefix}_phpBB3;
+    UPDATE phpbb_ext SET ext_active = '0' ;
+EOF
+)
+    # Remove Thanks for post, it dosnt disable well, clean cache to avoid fosils
+    rm -rf $FORUM_LOCATION/ext/gfksx
+    rm -rf $FORUM_LOCATION/cache/production$
+}
+
 
 function get_credentials() {
     # shellcheck disable=SC2016
@@ -304,6 +328,8 @@ EOF
         set_joomla_site_name "$site_fqn"
         disable_joomla_force_ssl
         disable_jfusion
+        disable_phpbb_extensions
+        set_phpbb_default_style
         sudo a2enmod rewrite 
 
     fi

@@ -11,6 +11,7 @@ subnet="subnet-8ffcbbea"
 
 repositiry='https://raw.githubusercontent.com/markgawler/ukriversguidebook.co.uk.tools/master'
 test=false
+export_cloud_init=false
 
 while [[ $# -gt 0 ]]; do
 	key=$1
@@ -31,9 +32,15 @@ while [[ $# -gt 0 ]]; do
 			;;
 		--help)
 			echo "  --name=<instance Nameed>, Default Area51"
+			echo "  --export_cloud_init, Export the cloud_init script"
 			echo ""
 			exit
 			;;
+        --export_cloud_init)
+            export_cloud_init=
+            test=
+            shift
+            ;;
 		*)  # unknown option
 			echo "$0: unrecognised option '$key'"
 			echo "Try '$0 --help' for more information."
@@ -83,17 +90,19 @@ function check_role_name() {
 function create_cloud_init_script () {
     local cloud_init
     local script_dir='/root/bin'
-    cloud_init="$(mktemp --suffix=_cloud-init.sh)"
-
+    #todo: macos dosnt support --suffix
+    #cloud_init="$(mktemp --suffix=_cloud-init.sh)"
+    cloud_init="$(mktemp)_cloud-init.sh"
     cat << EOF >> "$cloud_init"
 #!/usr/bin/env bash
 
 mkdir -p "$script_dir"
 curl "${repositiry}/misc-scripts/setup/build_site.sh" >  "${script_dir}/build_site.sh"
 curl "${repositiry}/misc-scripts/setup/configre_base_system.sh" >  "${script_dir}/configre_base_system.sh"
-
+curl "${repositiry}/misc-scripts/migration/upgrade_phpbb.sh" >  "${script_dir}/upgrade_phpbb.sh"
 source "${script_dir}/configre_base_system.sh"
 source "${script_dir}/build_site.sh" --hostname="$hostname"
+source "${script_dir}/upgrade_phpbb.sh" --version=3.3.13
 EOF
     echo "$cloud_init"
 }
@@ -137,6 +146,13 @@ function get_ip() {
     echo "$public_ip"
 }
 
+if ! [ "$export_cloud_init" ]; then
+    echo "Export cloud_init script"
+    script="$(create_cloud_init_script)"
+    cat $script
+    rm "$script"
+    exit
+fi
 if [ "$test" ]; then
     echo "Main Program"
 
