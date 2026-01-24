@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=//usr/local/under_attack/under_attack_watcher.sh
+ExecStart=/usr/local/under_attack/under_attack_watcher.sh
 Restart=on-failure
 
 [Install]
