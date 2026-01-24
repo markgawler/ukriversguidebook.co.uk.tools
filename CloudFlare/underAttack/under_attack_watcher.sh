@@ -1,24 +1,10 @@
 #!/bin/bash
 polling_interval=10		# default polling interval in seconds
-high_cpu_threshold=50	# must be an integer value between 0 and 100
+high_cpu_threshold=30	# must be an integer value between 0 and 100
 default_security_level="high" # security level to revert to when CPU load is normal
 sleep_after_change=60	# seconds to wait after changing security level
-cloudflare_config=".env" # path to CloudFlare API config file
+cloudflare_config="/usr/local/etc/under_attack/cloudflare.config" # path to CloudFlare API config file
 
-if [ ! -f "$cloudflare_config" ]; then
-	echo "Error: CloudFlare config file '$cloudflare_config' not found."
-	exit 1
-fi
-# shellcheck source=/dev/null
-if ! source "$cloudflare_config"; then
-	echo "Error: Failed to source CloudFlare config file '$cloudflare_config'."
-	exit 1
-fi
-# Check if required values are set in the config file
-if [[ -z "$API_TOKEN" || -z "$ZONE_ID" ]]; then
-	echo "Error: API_TOKEN and ZONE_ID must be set in the CloudFlare config file."
-	exit 1
-fi
 
 # Function to get CloudFlare security level
 # Returns the current security level as a string
@@ -61,6 +47,10 @@ get_cpu_load() {
 while [[ $# -gt 0 ]]; do
 	key=$1
 	case $key in
+		--cf-config=*)
+			cloudflare_config=${key#*=}
+			shift
+			;;
 		--get-security-level)
 			level=$(get_security_level)
 			echo "Current security level: $level"
@@ -107,7 +97,8 @@ while [[ $# -gt 0 ]]; do
 			echo "  --get-security-level          Get the CloudFlare security level "
 			echo "  --set-security-level=<level>  Set the CloudFlare security level (options: 'off', 'low', 'medium', 'high', 'under_attack')"
 			echo "  --poll=<seconds>              Polling interval in seconds (default: 10s)"
-			echo "  --high-cpu-threshold=<value>  CPU load percentage threshold to trigger 'Under Attack' mode (default: 50%)"
+			echo "  --cf-config=<path>            Path to CloudFlare API config file (default: /usr/local/etc/under_attack/cloudflare.config)"
+			echo "  --high-cpu-threshold=<value>  CPU load percentage threshold to trigger 'Under Attack' mode (default: 30%)"
 			echo "  --get-cpu-load                Get the current CPU load percentage"
 			exit
 			;;
@@ -118,6 +109,22 @@ while [[ $# -gt 0 ]]; do
 			;;
 	esac
 done
+
+# Load CloudFlare API config and validate
+if [ ! -f "$cloudflare_config" ]; then
+	echo "Error: CloudFlare config file '$cloudflare_config' not found."
+	exit 1
+fi
+# shellcheck source=/dev/null
+if ! source "$cloudflare_config"; then
+	echo "Error: Failed to source CloudFlare config file '$cloudflare_config'."
+	exit 1
+fi
+# Check if required values are set in the config file
+if [[ -z "$API_TOKEN" || -z "$ZONE_ID" ]]; then
+	echo "Error: API_TOKEN and ZONE_ID must be set in the CloudFlare config file."
+	exit 1
+fi
 
 
 # Main watcher loop

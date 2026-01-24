@@ -1,0 +1,11 @@
+[Unit]
+Description=Under Attack Watcher Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/path/to/watcher.sh
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
