@@ -1,8 +1,8 @@
 #!/bin/bash
-polling_interval=10		# default polling interval in seconds
-high_cpu_threshold=30	# must be an integer value between 0 and 100
-default_security_level="medium" # security level to revert to when CPU load is normal
-sleep_after_change=60	# seconds to wait after changing security level
+polling_interval=5		# default polling interval in seconds
+high_cpu_threshold=25	# must be an integer value between 0 and 100
+default_security_level="high" # security level to revert to when CPU load is normal
+sleep_after_change=120	# seconds to wait after changing security level
 cloudflare_config="/usr/local/etc/under_attack/cloudflare.config" # path to CloudFlare API config file
 verbose=false		# verbose output flag
 
@@ -145,7 +145,7 @@ do
 	fi
 	if [ "$cpu_load" -ge "$high_cpu_threshold" ]; then
 		if [ "$current_level" != "under_attack" ]; then
-			echo "High CPU load detected. Setting security level to 'under_attack'."
+			echo "High CPU load detected ($cpu_load%). Setting security level to 'under_attack'."
 			set_security_level "under_attack"
 			current_level="under_attack"
 			sleep "$sleep_after_change"
@@ -155,7 +155,6 @@ do
 			echo "CPU load normal. Setting security level to '$default_security_level'."
 			set_security_level "$default_security_level"
 			current_level="$default_security_level"
-			sleep "$sleep_after_change"
 		fi
 	fi
 	sleep "$polling_interval"
