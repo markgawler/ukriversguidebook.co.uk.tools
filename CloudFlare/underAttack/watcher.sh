@@ -3,13 +3,26 @@ polling_interval=10		# default polling interval in seconds
 high_cpu_threshold=50	# must be an integer value between 0 and 100
 default_security_level="high" # security level to revert to when CPU load is normal
 sleep_after_change=60	# seconds to wait after changing security level
+cloudflare_config=".env" # path to CloudFlare API config file
 
+if [ ! -f "$cloudflare_config" ]; then
+	echo "Error: CloudFlare config file '$cloudflare_config' not found."
+	exit 1
+fi
+# shellcheck source=/dev/null
+if ! source "$cloudflare_config"; then
+	echo "Error: Failed to source CloudFlare config file '$cloudflare_config'."
+	exit 1
+fi
+# Check if required values are set in the config file
+if [[ -z "$API_TOKEN" || -z "$ZONE_ID" ]]; then
+	echo "Error: API_TOKEN and ZONE_ID must be set in the CloudFlare config file."
+	exit 1
+fi
 
 # Function to get CloudFlare security level
 # Returns the current security level as a string
 get_security_level() {
-    # shellcheck source=/dev/null
-    source .env
     curl --request GET \
         "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/settings/security_level" \
         --header "Authorization: Bearer $API_TOKEN" \
@@ -22,8 +35,6 @@ get_security_level() {
 # Example levels: "off", "low", "medium", "high", "under_attack"
 set_security_level() {
 	local level=$1
-	# shellcheck source=/dev/null
-	source .env
 	curl --request PATCH \
 		"https://api.cloudflare.com/client/v4/zones/$ZONE_ID/settings/security_level" \
 		--header "Authorization: Bearer $API_TOKEN" \
