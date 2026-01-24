@@ -4,7 +4,7 @@ high_cpu_threshold=30	# must be an integer value between 0 and 100
 default_security_level="medium" # security level to revert to when CPU load is normal
 sleep_after_change=60	# seconds to wait after changing security level
 cloudflare_config="/usr/local/etc/under_attack/cloudflare.config" # path to CloudFlare API config file
-
+verbose=false		# verbose output flag
 
 # Function to get CloudFlare security level
 # Returns the current security level as a string
