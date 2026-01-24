@@ -11,7 +11,8 @@ mkdir -p "$install_dir"
 mkdir -p "$cf_config_dir"
 # Create a sample CloudFlare config file if it doesn't exist
 if [ ! -f "$cf_config_file" ]; then
-    cat <<EOL > "$cf_config_file"# CloudFlare API Configuration
+    cat <<EOL > "$cf_config_file"
+# CloudFlare API Configuration
 # Replace the placeholders with your actual CloudFlare API credentials and zone information.
 API_TOKEN="your_api_token_here"
 ZONE_ID="your_zone_id_here"
