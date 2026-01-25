@@ -172,7 +172,14 @@ do
 		fi
 	fi
 	if [ "$verbose" = true ]; then
-		echo "CPU load 1min: $cpu_load%, 5min: $cpu_load_five_min%, CF: $current_level, Loadavg: $(cat /proc/loadavg)"
+		if [[ "$OSTYPE" == "darwin"* ]]; then
+			# macOS, for testing purposes
+			raw_loadavg=$(sysctl -n vm.loadavg )
+		else
+			# Linux
+			raw_loadavg=$(awk '{print $1, $2, $3}' < /proc/loadavg)	
+		fi
+		echo "CPU load 1min: $cpu_load%, 5min: $cpu_load_five_min%, CF: $current_level, Loadavg: $raw_loadavg"
 	fi
 	sleep "$polling_interval"
 done
