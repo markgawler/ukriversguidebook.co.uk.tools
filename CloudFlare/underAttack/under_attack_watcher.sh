@@ -30,15 +30,24 @@ set_security_level() {
 
 # Function to get current CPU load percentage, normalized by number of CPU cores
 # Returns an integer value between 0 and 100
+# Accepts one optional argument: load average period (1, 5, or 15 minutes)
 get_cpu_load() {
+	local load_index=${1:-1}  # Default to 1-minute average (index 1), or 5-minute (index 3)
+	case $load_index in
+		1) load_index=1 ;;  # 1-minute average
+		5) load_index=2 ;;  # 5-minute average
+		15) load_index=3 ;; # 15-minute average
+		*) load_index=1 ;;  # Default to 1-minute average for invalid input
+	esac
+	local cores load
 	if [[ "$OSTYPE" == "darwin"* ]]; then
 		# macOS, for testing purposes
 		cores=$(sysctl -n hw.logicalcpu)
-		load=$(sysctl -n vm.loadavg | awk '{print $2}')
+		load=$(sysctl -n vm.loadavg | awk -v idx="$((load_index + 1))" '{print $idx}')
 	else
 		# Linux
 		cores=$(nproc)
-		load=$(awk '{print $1}' < /proc/loadavg)
+		load=$(awk -v idx="$load_index" '{print $idx}' < /proc/loadavg)
 	fi
 	awk -v c="${cores}" -v l="${load}" 'BEGIN{print l*100/c }' <<< "${load}" | awk '{printf "%.0f", $0}'
 }
@@ -70,8 +79,15 @@ while [[ $# -gt 0 ]]; do
 			fi
 			exit 0
 			;;
-		--get-cpu-load)
-			load=$(get_cpu_load)
+		--get-cpu-load=* |--get-cpu-load)
+			average=${key#*=}
+			# Default to 1-minute average if no value specified
+			if [ "$average" == "" ] || [ "$average" == "--get-cpu-load" ]; then
+				average=1
+			elif [ "$average" != "1" ] && [ "$average" != "5" ] && [ "$average" != "15" ]; then
+				echo "$0: Invalid value for '--get-cpu-load'. Valid options are 1 , 5 , or 15."
+			fi
+			load=$(get_cpu_load "$average")
 			echo "Current CPU load: $load"
 			exit 0
 			;;
@@ -133,16 +149,13 @@ fi
 
 # Main watcher loop
 #
-#logger -p user.info "Starting watcher, polling every $polling_interval seconds"
 echo  "Starting watcher, polling every $polling_interval seconds"
 current_level=$(get_security_level)
 echo "Initial security level: $current_level"
 while (true)
 do
 	cpu_load=$(get_cpu_load)
-	if [ "$verbose" = true ]; then
-		echo "Current CPU load: $cpu_load%, CF: $current_level, Loadavg: $(cat /proc/loadavg)"
-	fi
+	
 	if [ "$cpu_load" -ge "$high_cpu_threshold" ]; then
 		if [ "$current_level" != "under_attack" ]; then
 			echo "High CPU load detected ($cpu_load%). Setting security level to 'under_attack'."
@@ -150,11 +163,16 @@ do
 			current_level="under_attack"
 		fi
 	else
-		if [ "$cpu_load" -le "$low_cpu_threshold" ] && [ "$current_level" != "$default_security_level" ]; then
+		# Check if CPU load has been below the low threshold for one minute and five minutes
+		cpu_load_five_min=$(get_cpu_load 5)
+		if [ "$cpu_load" -le "$low_cpu_threshold" ] && [ "$cpu_load_five_min" -le "$low_cpu_threshold" ] && [ "$current_level" != "$default_security_level" ]; then
 			echo "CPU load back to normal ($cpu_load%). Reverting security level to '$default_security_level'."
 			set_security_level "$default_security_level"
 			current_level="$default_security_level"
 		fi
+	fi
+	if [ "$verbose" = true ]; then
+		echo "CPU load 1min: $cpu_load%, 5min: $cpu_load_five_min%, CF: $current_level, Loadavg: $(cat /proc/loadavg)"
 	fi
 	sleep "$polling_interval"
 done
