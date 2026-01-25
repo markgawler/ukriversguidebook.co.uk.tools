@@ -163,9 +163,9 @@ do
 			current_level="under_attack"
 		fi
 	else
-		# Check if CPU load has been below the low threshold for one minute and five minutes
-		cpu_load_five_min=$(get_cpu_load 5)
-		if [ "$cpu_load" -le "$low_cpu_threshold" ] && [ "$cpu_load_five_min" -le "$low_cpu_threshold" ] && [ "$current_level" != "$default_security_level" ]; then
+		# Check if CPU load has been below the low threshold for one minute and fifteen minutes
+		cpu_load_fifteen_min=$(get_cpu_load 15)
+		if [ "$cpu_load" -le "$low_cpu_threshold" ] && [ "$cpu_load_fifteen_min" -le "$low_cpu_threshold" ] && [ "$current_level" != "$default_security_level" ]; then
 			echo "CPU load back to normal ($cpu_load%). Reverting security level to '$default_security_level'."
 			set_security_level "$default_security_level"
 			current_level="$default_security_level"
@@ -179,7 +179,7 @@ do
 			# Linux
 			raw_loadavg=$(awk '{print $1, $2, $3}' < /proc/loadavg)	
 		fi
-		echo "CPU load 1min: $cpu_load%, 5min: $cpu_load_five_min%, CF: $current_level, Loadavg: $raw_loadavg"
+		echo "CPU load 1min: $cpu_load%, 5min: $cpu_load_fifteen_min%, CF: $current_level, Loadavg: $raw_loadavg"
 	fi
 	sleep "$polling_interval"
 done
