@@ -141,7 +141,7 @@ while (true)
 do
 	cpu_load=$(get_cpu_load)
 	if [ "$verbose" = true ]; then
-		echo "Current CPU load: $cpu_load%"
+		echo "Current CPU load: $cpu_load%, CF: $current_level, Loadavg: $(cat /proc/loadavg)"
 	fi
 	if [ "$cpu_load" -ge "$high_cpu_threshold" ]; then
 		if [ "$current_level" != "under_attack" ]; then
